@@ -1,0 +1,17 @@
+{
+  "name": "Braham Licia Consulting",
+  "short_name": "BLC",
+  "description": "Premium consulting, advisory, and professional development support for businesses, institutions, and leaders.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#F5F7FC",
+  "theme_color": "#204080",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "64x64",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="favicon-title favicon-desc">
+  <title id="favicon-title">Braham Licia Consulting</title>
+  <desc id="favicon-desc">Monogram icon for Braham Licia Consulting.</desc>
+  <defs>
+    <linearGradient id="blc-gradient" x1="6" x2="58" y1="6" y2="58" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#204080" />
+      <stop offset="1" stop-color="#5C70A8" />
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="20" fill="#F5F7FC" />
+  <rect x="6" y="6" width="52" height="52" rx="16" fill="url(#blc-gradient)" />
+  <path
+    d="M19 18h11.4c7 0 10.8 3.5 10.8 8.9 0 3.8-1.9 6.4-5.2 7.7 4.4 1.1 6.8 4 6.8 8.6 0 6.2-4.7 10.1-12.3 10.1H19V18Zm10.3 14.3c2.7 0 4.4-1.4 4.4-3.8 0-2.2-1.6-3.6-4.3-3.6h-3.2v7.4h3.1Zm1.1 13.9c3.1 0 4.9-1.5 4.9-4.1 0-2.5-1.8-3.9-4.9-3.9h-4.2v8h4.2Z"
+    fill="#FFFFFF"
+  />
+</svg>

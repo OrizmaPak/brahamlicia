@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" role="img" aria-labelledby="cover-title cover-desc">
+  <title id="cover-title">Braham Licia Consulting</title>
+  <desc id="cover-desc">Social preview image for Braham Licia Consulting.</desc>
+  <defs>
+    <linearGradient id="cover-bg" x1="114" x2="1042" y1="72" y2="558" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#204080" />
+      <stop offset="0.54" stop-color="#2D518E" />
+      <stop offset="1" stop-color="#5C70A8" />
+    </linearGradient>
+    <radialGradient id="cover-orb" cx="0" cy="0" r="1" gradientTransform="translate(1010 136) rotate(133.08) scale(402.7 340.2)" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFFFFF" stop-opacity="0.34" />
+      <stop offset="1" stop-color="#FFFFFF" stop-opacity="0" />
+    </radialGradient>
+  </defs>
+  <rect width="1200" height="630" fill="#F5F7FC" />
+  <rect x="36" y="36" width="1128" height="558" rx="42" fill="url(#cover-bg)" />
+  <circle cx="1010" cy="136" r="208" fill="url(#cover-orb)" />
+  <circle cx="1032" cy="560" r="208" fill="#FFFFFF" fill-opacity="0.08" />
+  <rect x="94" y="96" width="116" height="116" rx="30" fill="#FFFFFF" fill-opacity="0.14" />
+  <rect x="110" y="112" width="84" height="84" rx="24" fill="#FFFFFF" />
+  <text x="140" y="168" fill="#204080" font-family="Manrope, sans-serif" font-size="56" font-weight="800">B</text>
+  <text x="94" y="286" fill="#D8DEF0" font-family="Manrope, sans-serif" font-size="20" font-weight="700" letter-spacing="6">BRAHAM LICIA CONSULTING</text>
+  <text x="94" y="392" fill="#FFFFFF" font-family="Sora, sans-serif" font-size="66" font-weight="700">
+    Consulting that helps
+  </text>
+  <text x="94" y="470" fill="#FFFFFF" font-family="Sora, sans-serif" font-size="66" font-weight="700">
+    people and organisations
+  </text>
+  <text x="94" y="548" fill="#FFFFFF" font-family="Cormorant Garamond, serif" font-size="76" font-style="italic" font-weight="600">
+    grow with clarity.
+  </text>
+</svg>

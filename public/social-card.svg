@@ -1,0 +1,15 @@
+<svg width="1200" height="630" viewBox="0 0 1200 630" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1200" height="630" fill="#F5F7FC"/>
+  <rect x="58" y="58" width="1084" height="514" rx="36" fill="url(#paint0_linear_1_2)"/>
+  <circle cx="932" cy="186" r="102" fill="#FFFFFF" fill-opacity="0.1"/>
+  <circle cx="1016" cy="254" r="142" fill="#FFFFFF" fill-opacity="0.06"/>
+  <text x="118" y="258" fill="#FFFFFF" font-family="Arial, Helvetica, sans-serif" font-size="74" font-weight="700">Braham Licia</text>
+  <text x="118" y="334" fill="#FFFFFF" font-family="Arial, Helvetica, sans-serif" font-size="74" font-weight="700">Consulting</text>
+  <text x="118" y="408" fill="#D8DEF0" font-family="Arial, Helvetica, sans-serif" font-size="34">Clarity, capacity, and practical direction for meaningful growth.</text>
+  <defs>
+    <linearGradient id="paint0_linear_1_2" x1="58" y1="58" x2="1142" y2="572" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#204080"/>
+      <stop offset="1" stop-color="#5C70A8"/>
+    </linearGradient>
+  </defs>
+</svg>
