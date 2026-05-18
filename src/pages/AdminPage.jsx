@@ -73,7 +73,7 @@ function LoginPanel({ error, onLogin }) {
 function EnquiriesInbox({ user }) {
   const [enquiries, setEnquiries] = useState([])
   const [statuses, setStatuses] = useState([])
-  const [activeEnquiryTab, setActiveEnquiryTab] = useState('active')
+  const [activeEnquiryView, setActiveEnquiryView] = useState('active')
   const [activeStatusFilter, setActiveStatusFilter] = useState('All')
   const [selectedEnquiryId, setSelectedEnquiryId] = useState('')
   const [error, setError] = useState('')
@@ -122,11 +122,12 @@ function EnquiriesInbox({ user }) {
   )
 
   const visibleEnquiries = useMemo(() => {
-    const isArchiveView = activeEnquiryTab === 'archived'
+    if (activeEnquiryView === 'statuses') return []
+    const isArchiveView = activeEnquiryView === 'archived'
     const byArchive = enquiries.filter((item) => Boolean(item.archived) === isArchiveView)
     if (activeStatusFilter === 'All') return byArchive
     return byArchive.filter((item) => (item.status || 'Not attended') === activeStatusFilter)
-  }, [activeEnquiryTab, activeStatusFilter, enquiries])
+  }, [activeEnquiryView, activeStatusFilter, enquiries])
 
   useEffect(() => {
     if (!visibleEnquiries.length) {
@@ -229,66 +230,74 @@ function EnquiriesInbox({ user }) {
           <span>Enquiries</span>
           <h2>Pipeline</h2>
         </div>
-        <strong>{visibleEnquiries.length}</strong>
+        <strong>{activeEnquiryView === 'statuses' ? customStatuses.length : visibleEnquiries.length}</strong>
       </div>
 
       <div className="admin-enquiries-toolbar">
         <div className="admin-tab-switch" role="tablist">
-          <button className={activeEnquiryTab === 'active' ? 'is-active' : ''} onClick={() => setActiveEnquiryTab('active')} type="button">
+          <button className={activeEnquiryView === 'active' ? 'is-active' : ''} onClick={() => setActiveEnquiryView('active')} type="button">
             Active
           </button>
-          <button className={activeEnquiryTab === 'archived' ? 'is-active' : ''} onClick={() => setActiveEnquiryTab('archived')} type="button">
+          <button className={activeEnquiryView === 'archived' ? 'is-active' : ''} onClick={() => setActiveEnquiryView('archived')} type="button">
             Archive
           </button>
+          <button className={activeEnquiryView === 'statuses' ? 'is-active' : ''} onClick={() => setActiveEnquiryView('statuses')} type="button">
+            Statuses
+          </button>
         </div>
-        <label className="admin-enquiry__control admin-filter-control">
-          <span>Filter by status</span>
-          <select onChange={(event) => setActiveStatusFilter(event.target.value)} value={activeStatusFilter}>
-            <option value="All">All</option>
-            {statusOptions.map((status) => (
-              <option key={status} value={status}>
-                {status}
-              </option>
-            ))}
-          </select>
-        </label>
+        {activeEnquiryView !== 'statuses' ? (
+          <label className="admin-enquiry__control admin-filter-control">
+            <span>Filter by status</span>
+            <select onChange={(event) => setActiveStatusFilter(event.target.value)} value={activeStatusFilter}>
+              <option value="All">All</option>
+              {statusOptions.map((status) => (
+                <option key={status} value={status}>
+                  {status}
+                </option>
+              ))}
+            </select>
+          </label>
+        ) : null}
       </div>
 
-      <div className="admin-status-board">
-        <div className="admin-status-manager">
-          <span>Manage status</span>
-          <div>
-            <input onChange={(event) => setStatusInput(event.target.value)} placeholder="Add status" type="text" value={statusInput} />
-            <button className="button button--secondary" disabled={busyStatusId === 'create-status'} onClick={handleCreateStatus} type="button">
-              {busyStatusId === 'create-status' ? 'Adding...' : 'Add'}
-            </button>
-          </div>
-          <div className="admin-status-list">
-            {defaultEnquiryStatuses.map((status) => (
-              <span className="admin-status-pill admin-status-pill--locked" key={status}>
-                {status}
-              </span>
-            ))}
-            {customStatuses.map((status) => (
-              <button
-                className="admin-status-pill"
-                disabled={busyStatusId === status.id}
-                key={status.id}
-                onClick={() => handleDeleteStatus(status.id)}
-                type="button"
-              >
-                {busyStatusId === status.id ? 'Deleting...' : `${status.label} x`}
+      {activeEnquiryView === 'statuses' ? (
+        <div className="admin-status-board">
+          <div className="admin-status-manager admin-status-manager--panel">
+            <span>Manage statuses</span>
+            <div>
+              <input onChange={(event) => setStatusInput(event.target.value)} placeholder="Add status" type="text" value={statusInput} />
+              <button className="button button--secondary" disabled={busyStatusId === 'create-status'} onClick={handleCreateStatus} type="button">
+                {busyStatusId === 'create-status' ? 'Adding...' : 'Add'}
               </button>
-            ))}
+            </div>
+            <p className="admin-status-manager__hint">Default statuses are locked. Custom statuses can be deleted.</p>
+            <div className="admin-status-list">
+              {defaultEnquiryStatuses.map((status) => (
+                <span className="admin-status-pill admin-status-pill--locked" key={status}>
+                  {status}
+                </span>
+              ))}
+              {customStatuses.map((status) => (
+                <button
+                  className="admin-status-pill"
+                  disabled={busyStatusId === status.id}
+                  key={status.id}
+                  onClick={() => handleDeleteStatus(status.id)}
+                  type="button"
+                >
+                  {busyStatusId === status.id ? 'Deleting...' : `${status.label} x`}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
-      </div>
+      ) : null}
 
       {isLoading ? <p>Loading enquiries...</p> : null}
       {error ? <div className="admin-alert">{error}</div> : null}
       {!isLoading && visibleEnquiries.length === 0 ? <p>No enquiries in this list yet.</p> : null}
 
-      {visibleEnquiries.length > 0 ? (
+      {activeEnquiryView !== 'statuses' && visibleEnquiries.length > 0 ? (
         <div className="admin-enquiry-shell">
           <aside className="admin-enquiry-list admin-enquiry-list--compact">
             {visibleEnquiries.map((item) => {
@@ -315,7 +324,7 @@ function EnquiriesInbox({ user }) {
                   <h3>{selectedEnquiry.name || 'Unnamed enquiry'}</h3>
                   <p>{selectedEnquiry.createdAt?.toDate?.().toLocaleString?.() ?? 'No date yet'}</p>
                 </div>
-                <span className="admin-enquiry__status">{selectedEnquiry.status || 'Not attended'}</span>
+                <span>{selectedEnquiry.service || 'No service selected'}</span>
               </div>
 
               <p className="admin-enquiry-detail__description">{selectedEnquiry.description}</p>

@@ -6874,6 +6874,18 @@ section[id] {
   gap: 0.35rem;
 }
 
+.admin-status-manager--panel {
+  border: 1px solid rgba(212, 220, 237, 0.9);
+  border-radius: 12px;
+  background: #ffffff;
+  padding: 0.85rem;
+}
+
+.admin-status-manager__hint {
+  color: #6b7b97;
+  font-size: 0.84rem;
+}
+
 .admin-status-manager > span {
   color: #64748b;
   font-size: 0.76rem;
@@ -6964,6 +6976,7 @@ section[id] {
 
 .admin-status-board {
   margin-bottom: 0.9rem;
+  min-height: 520px;
 }
 
 .admin-status-list {
@@ -7050,6 +7063,12 @@ section[id] {
 .admin-enquiry-detail__head p {
   color: #6b7b97;
   font-size: 0.86rem;
+}
+
+.admin-enquiry-detail__head span {
+  color: #5d6d89;
+  font-size: 0.84rem;
+  font-weight: 700;
 }
 
 .admin-enquiry-detail__description {
