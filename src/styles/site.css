@@ -6790,6 +6790,7 @@ section[id] {
   border: 1px solid rgba(212, 220, 237, 0.9);
   background: #ffffff;
   box-shadow: 0 10px 28px rgba(8, 20, 44, 0.05);
+  min-height: 760px;
 }
 
 .admin-inbox-panel .admin-card__head strong {
@@ -6976,7 +6977,9 @@ section[id] {
 
 .admin-status-board {
   margin-bottom: 0.9rem;
-  min-height: 520px;
+  min-height: 560px;
+  max-height: 560px;
+  overflow: auto;
 }
 
 .admin-status-list {
@@ -7008,7 +7011,9 @@ section[id] {
   grid-template-columns: 320px minmax(0, 1fr);
   gap: 0.75rem;
   align-items: start;
-  min-height: 520px;
+  min-height: 560px;
+  max-height: 560px;
+  overflow: hidden;
 }
 
 .admin-enquiry-list--compact {
@@ -7051,6 +7056,8 @@ section[id] {
   padding: 0.9rem;
   display: grid;
   gap: 0.8rem;
+  max-height: 560px;
+  overflow: auto;
 }
 
 .admin-enquiry-detail__head {
@@ -7116,12 +7123,29 @@ section[id] {
 }
 
 @media (max-width: 980px) {
+  .admin-inbox-panel {
+    min-height: auto;
+  }
+
+  .admin-status-board {
+    min-height: auto;
+    max-height: none;
+    overflow: visible;
+  }
+
   .admin-enquiry-shell {
     grid-template-columns: 1fr;
     min-height: auto;
+    max-height: none;
+    overflow: visible;
   }
 
   .admin-enquiry-list--compact {
     max-height: 260px;
+  }
+
+  .admin-enquiry-detail {
+    max-height: none;
+    overflow: visible;
   }
 }
