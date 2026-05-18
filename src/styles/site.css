@@ -6017,6 +6017,38 @@ section[id] {
   font-weight: 800;
 }
 
+.admin-seed-modal {
+  gap: 1rem;
+}
+
+.admin-seed-modal__loading {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  border-radius: 0.9rem;
+  padding: 0.75rem 0.9rem;
+  background: rgba(22, 49, 95, 0.07);
+}
+
+.admin-spinner {
+  width: 1rem;
+  height: 1rem;
+  border-radius: 999px;
+  border: 2px solid rgba(22, 49, 95, 0.2);
+  border-top-color: rgba(22, 49, 95, 0.85);
+  animation: adminSpinnerSpin 0.8s linear infinite;
+}
+
+@keyframes adminSpinnerSpin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 @media (max-width: 760px) {
   .admin-dashboard__header,
   .admin-enquiry,

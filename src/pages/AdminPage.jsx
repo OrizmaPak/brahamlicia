@@ -115,16 +115,22 @@ function EnquiriesInbox() {
 
 function Dashboard({ onLogout, user }) {
   const [seedStatus, setSeedStatus] = useState('')
+  const [isSeeding, setIsSeeding] = useState(false)
+  const [isSeedModalOpen, setIsSeedModalOpen] = useState(false)
   const fallbackFields = useMemo(() => createHomeFallbackFields(), [])
 
   async function handleSeedHome() {
-    setSeedStatus('Seeding Home content...')
+    setIsSeeding(true)
+    setSeedStatus('Resetting all Home page content to the original values...')
 
     try {
       await seedHomeContent(fallbackFields, user)
       setSeedStatus('Home fallback content has been written to Firestore.')
     } catch (error) {
       setSeedStatus(error.message)
+    } finally {
+      setIsSeeding(false)
+      setIsSeedModalOpen(false)
     }
   }
 
@@ -147,7 +153,11 @@ function Dashboard({ onLogout, user }) {
           <h2>Edit Home Page</h2>
           <p>Open the real Home page, click any outlined text, link, or image, then save live with a revision backup.</p>
         </a>
-        <button className="admin-card admin-card--action admin-card--button" onClick={handleSeedHome} type="button">
+        <button
+          className="admin-card admin-card--action admin-card--button"
+          onClick={() => setIsSeedModalOpen(true)}
+          type="button"
+        >
           <span>Initial content</span>
           <h2>Seed Home Fallback</h2>
           <p>Copy the current hardcoded Home content into `sitePages/home` so every field is ready for inline editing.</p>
@@ -155,6 +165,37 @@ function Dashboard({ onLogout, user }) {
       </div>
 
       {seedStatus ? <div className="admin-status">{seedStatus}</div> : null}
+      {isSeedModalOpen ? (
+        <div aria-modal="true" className="editor-modal" role="dialog">
+          <div className="editor-modal__panel admin-seed-modal">
+            <span className="editor-modal__eyebrow">Reset Home Content</span>
+            <h2>Reset all Home page data to the original content?</h2>
+            <p>
+              This will overwrite the current Home page values in `sitePages/home` with the baseline
+              hardcoded content.
+            </p>
+            {isSeeding ? (
+              <div className="admin-seed-modal__loading">
+                <span aria-hidden="true" className="admin-spinner" />
+                <p>Resetting all data now...</p>
+              </div>
+            ) : null}
+            <div className="editor-modal__actions">
+              <button
+                className="button button--secondary"
+                disabled={isSeeding}
+                onClick={() => setIsSeedModalOpen(false)}
+                type="button"
+              >
+                Cancel
+              </button>
+              <button className="button button--primary" disabled={isSeeding} onClick={handleSeedHome} type="button">
+                {isSeeding ? 'Resetting...' : 'Proceed and Reset'}
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
       <EnquiriesInbox />
     </main>
   )
