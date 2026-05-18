@@ -13,7 +13,13 @@ export function EditableImage({ className = '', fieldKey, label, loading }) {
 
     event.preventDefault()
     event.stopPropagation()
-    openEditor({ field, fieldKey, label: label ?? fieldKey, type: 'image' })
+    openEditor({
+      autoOpenFilePicker: true,
+      field,
+      fieldKey,
+      label: label ?? fieldKey,
+      type: 'image',
+    })
   }
 
   function handleKeyDown(event) {

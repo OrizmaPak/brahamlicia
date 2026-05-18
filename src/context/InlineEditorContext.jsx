@@ -62,6 +62,8 @@ function InlineFieldDialog({ activeEdit, closeEditor, pageId, stageSave }) {
   const [draftAlt, setDraftAlt] = useState('')
   const [uploadMessage, setUploadMessage] = useState('')
   const [isUploading, setIsUploading] = useState(false)
+  const fileInputRef = React.useRef(null)
+  const hasAutoOpenedPickerRef = React.useRef(false)
 
   React.useEffect(() => {
     if (!activeEdit) return
@@ -73,6 +75,18 @@ function InlineFieldDialog({ activeEdit, closeEditor, pageId, stageSave }) {
     setDraftAlt(activeEdit.field?.alt ?? '')
     setUploadMessage('')
     setIsUploading(false)
+    hasAutoOpenedPickerRef.current = false
+  }, [activeEdit])
+
+  React.useEffect(() => {
+    if (!activeEdit || activeEdit.type !== 'image') return
+    if (!activeEdit.autoOpenFilePicker) return
+    if (hasAutoOpenedPickerRef.current) return
+    if (!fileInputRef.current) return
+
+    // Open native file picker immediately when an editable image is clicked.
+    fileInputRef.current.click()
+    hasAutoOpenedPickerRef.current = true
   }, [activeEdit])
 
   if (!activeEdit) return null
@@ -151,7 +165,13 @@ function InlineFieldDialog({ activeEdit, closeEditor, pageId, stageSave }) {
             </label>
             <label className="editor-field editor-field--upload">
               <span>Upload from PC</span>
-              <input accept="image/jpeg,image/png,image/webp" disabled={isUploading} onChange={handleFileUpload} type="file" />
+              <input
+                accept="image/jpeg,image/png,image/webp"
+                disabled={isUploading}
+                onChange={handleFileUpload}
+                ref={fileInputRef}
+                type="file"
+              />
             </label>
             {draftSrc ? (
               <figure className="editor-image-preview">
