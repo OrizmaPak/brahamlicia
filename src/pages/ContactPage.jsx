@@ -1,27 +1,25 @@
-import React from 'react'
+﻿import React from 'react'
 import { ContactForm } from '../components/ContactForm.jsx'
 import { SectionHeading } from '../components/SectionHeading.jsx'
 import { SiteLayout } from '../components/SiteLayout.jsx'
-import { imageLibrary, siteConfig } from '../content/siteContent.js'
+import { EditableImage } from '../components/editor/EditableImage.jsx'
+import { EditableLink } from '../components/editor/EditableLink.jsx'
+import { EditableText } from '../components/editor/EditableText.jsx'
+import { createContactFallbackFields } from '../content/contactContentFields.js'
+import { PageContentProvider } from '../context/PageContentContext.jsx'
 
-export function ContactPage({ pageId }) {
+function ContactContent({ pageId }) {
   return (
     <SiteLayout pageId={pageId}>
       <section className="page-hero page-hero--contact section section--soft">
         <div className="container page-hero__grid">
           <div data-reveal>
-            <p className="section-eyebrow">Contact us</p>
-            <h1 className="page-hero__title">
-              Let's talk about how Braham Licia Consulting can support your growth, learning,
-              or next initiative.
-            </h1>
-            <p className="page-hero__text">
-              Whether you need consulting support, a training engagement, project advisory, or
-              simply want to explore possibilities, we would be glad to hear from you.
-            </p>
+            <EditableText as="p" className="section-eyebrow" fieldKey="hero.eyebrow" label="Contact hero eyebrow" />
+            <EditableText as="h1" className="page-hero__title" fieldKey="hero.title" label="Contact hero title" multiline />
+            <EditableText as="p" className="page-hero__text" fieldKey="hero.description" label="Contact hero description" multiline />
           </div>
           <figure className="page-hero__media" data-reveal style={{ '--delay': '140ms' }}>
-            <img alt={imageLibrary.office.alt} src={imageLibrary.office.src} />
+            <EditableImage fieldKey="hero.image" label="Contact hero image" />
           </figure>
         </div>
       </section>
@@ -30,18 +28,18 @@ export function ContactPage({ pageId }) {
         <div className="container contact-grid">
           <div className="contact-grid__form">
             <SectionHeading
-              eyebrow="Send an enquiry"
-              title="Tell us a little about your needs."
-              description="Use the form below to share your goals, service interest, and preferred next step."
+              eyebrow={<EditableText fieldKey="form.heading.eyebrow" label="Contact form eyebrow" />}
+              title={<EditableText fieldKey="form.heading.title" label="Contact form title" />}
+              description={<EditableText fieldKey="form.heading.description" label="Contact form description" multiline />}
             />
             <div className="contact-grid__intro-visual" data-reveal style={{ '--delay': '80ms' }}>
               <figure className="contact-grid__feature-image">
-                <img alt={imageLibrary.collaboration.alt} loading="lazy" src={imageLibrary.collaboration.src} />
+                <EditableImage fieldKey="form.visual.image" label="Contact form intro image" loading="lazy" />
               </figure>
               <div className="illustration-card illustration-card--compact">
                 <div className="illustration-card__header">
-                  <span>First contact</span>
-                  <strong>Clear brief. Calm review. Structured next move.</strong>
+                  <EditableText as="span" fieldKey="form.visual.label" label="Contact form visual label" />
+                  <EditableText as="strong" fieldKey="form.visual.title" label="Contact form visual title" multiline />
                 </div>
               </div>
             </div>
@@ -50,45 +48,45 @@ export function ContactPage({ pageId }) {
 
           <aside className="contact-sidebar" data-reveal style={{ '--delay': '120ms' }}>
             <div className="contact-card">
-              <h3>Contact details</h3>
+              <EditableText as="h3" fieldKey="details.heading" label="Contact details heading" />
               <div className="contact-list">
                 <div>
-                  <span>Email</span>
-                  <a href={`mailto:${siteConfig.primaryEmail}`}>{siteConfig.primaryEmail}</a>
+                  <EditableText as="span" fieldKey="details.labels.email" label="Contact label email" />
+                  <EditableLink fieldKey="details.values.email" label="Contact value email" />
                 </div>
                 <div>
-                  <span>Support</span>
-                  <a href={`mailto:${siteConfig.secondaryEmail}`}>{siteConfig.secondaryEmail}</a>
+                  <EditableText as="span" fieldKey="details.labels.support" label="Contact label support" />
+                  <EditableLink fieldKey="details.values.support" label="Contact value support" />
                 </div>
                 <div>
-                  <span>Phone</span>
-                  <a href="tel:+2348143701179">{siteConfig.primaryPhone}</a>
+                  <EditableText as="span" fieldKey="details.labels.phone" label="Contact label phone" />
+                  <EditableLink fieldKey="details.values.phone" label="Contact value phone" />
                 </div>
                 <div>
-                  <span>Alternate line</span>
-                  <a href="tel:+2348143866334">{siteConfig.secondaryPhone}</a>
+                  <EditableText as="span" fieldKey="details.labels.altPhone" label="Contact label alt phone" />
+                  <EditableLink fieldKey="details.values.altPhone" label="Contact value alt phone" />
                 </div>
                 <div>
-                  <span>Location</span>
-                  <p>{siteConfig.location}</p>
+                  <EditableText as="span" fieldKey="details.labels.location" label="Contact label location" />
+                  <EditableText as="p" fieldKey="details.values.location" label="Contact value location" multiline />
                 </div>
                 <div>
-                  <span>Business hours</span>
-                  <p>{siteConfig.hours}</p>
+                  <EditableText as="span" fieldKey="details.labels.hours" label="Contact label business hours" />
+                  <EditableText as="p" fieldKey="details.values.hours" label="Contact value business hours" multiline />
                 </div>
               </div>
             </div>
             <div className="contact-sidebar__stack">
               <figure className="contact-sidebar__image">
-                <img alt={imageLibrary.training.alt} loading="lazy" src={imageLibrary.training.src} />
+                <EditableImage fieldKey="details.images.primary" label="Contact sidebar primary image" loading="lazy" />
               </figure>
               <figure className="contact-sidebar__image contact-sidebar__image--compact">
-                <img alt={imageLibrary.boardroom.alt} loading="lazy" src={imageLibrary.boardroom.src} />
+                <EditableImage fieldKey="details.images.secondary" label="Contact sidebar secondary image" loading="lazy" />
               </figure>
               <div className="illustration-card illustration-card--compact">
                 <div className="illustration-card__header">
-                  <span>Next step</span>
-                  <strong>Tell us the brief. We shape the path.</strong>
+                  <EditableText as="span" fieldKey="details.next.label" label="Contact next-step label" />
+                  <EditableText as="strong" fieldKey="details.next.title" label="Contact next-step title" multiline />
                 </div>
               </div>
             </div>
@@ -99,21 +97,23 @@ export function ContactPage({ pageId }) {
       <section className="section section--ribbon-soft section--contact-cta">
         <div className="container cta-panel" data-reveal>
           <div>
-            <p className="section-eyebrow">Ready to take the next step?</p>
-            <h2 className="section-title">
-              Book a consultation or send an enquiry and let's explore how we can work together.
-            </h2>
+            <EditableText as="p" className="section-eyebrow" fieldKey="cta.eyebrow" label="Contact CTA eyebrow" />
+            <EditableText as="h2" className="section-title" fieldKey="cta.title" label="Contact CTA title" multiline />
           </div>
           <div className="button-row">
-            <a className="button button--primary" href="/contact/#enquiry">
-              Book a Consultation
-            </a>
-            <a className="button button--secondary" href={`mailto:${siteConfig.primaryEmail}`}>
-              Email Us
-            </a>
+            <EditableLink className="button button--primary" fieldKey="cta.primary" label="Contact CTA primary" />
+            <EditableLink className="button button--secondary" fieldKey="cta.secondary" label="Contact CTA secondary" />
           </div>
         </div>
       </section>
     </SiteLayout>
+  )
+}
+
+export function ContactPage({ pageId }) {
+  return (
+    <PageContentProvider createFallbackFields={createContactFallbackFields} pageId="contact">
+      <ContactContent pageId={pageId} />
+    </PageContentProvider>
   )
 }

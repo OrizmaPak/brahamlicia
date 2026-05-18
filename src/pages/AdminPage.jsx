@@ -6,9 +6,11 @@ import {
   signOut,
 } from 'firebase/auth'
 import { AboutPage } from './AboutPage.jsx'
+import { ContactPage } from './ContactPage.jsx'
 import { HomePage } from './HomePage.jsx'
 import { ServicesPage } from './ServicesPage.jsx'
 import { createAboutFallbackFields } from '../content/aboutContentFields.js'
+import { createContactFallbackFields } from '../content/contactContentFields.js'
 import { createHomeFallbackFields } from '../content/homeContentFields.js'
 import { createServicesFallbackFields } from '../content/servicesContentFields.js'
 import { InlineEditorProvider } from '../context/InlineEditorContext.jsx'
@@ -124,6 +126,7 @@ function Dashboard({ onLogout, user }) {
   const homeFallbackFields = useMemo(() => createHomeFallbackFields(), [])
   const aboutFallbackFields = useMemo(() => createAboutFallbackFields(), [])
   const servicesFallbackFields = useMemo(() => createServicesFallbackFields(), [])
+  const contactFallbackFields = useMemo(() => createContactFallbackFields(), [])
 
   async function handleResetPage() {
     if (!resetTargetPage) return
@@ -134,6 +137,8 @@ function Dashboard({ onLogout, user }) {
         ? 'About'
         : resetTargetPage === 'services'
           ? 'Services'
+          : resetTargetPage === 'contact'
+            ? 'Contact'
           : 'Home'
     setSeedStatus(`Resetting all ${pageLabel} page content to the original values...`)
 
@@ -143,6 +148,8 @@ function Dashboard({ onLogout, user }) {
           ? aboutFallbackFields
           : resetTargetPage === 'services'
             ? servicesFallbackFields
+            : resetTargetPage === 'contact'
+              ? contactFallbackFields
             : homeFallbackFields
       await seedPageContent(resetTargetPage, fields, user)
       setSeedStatus(`${pageLabel} fallback content has been written to Firestore.`)
@@ -224,6 +231,25 @@ function Dashboard({ onLogout, user }) {
             </button>
           </div>
         </details>
+
+        <details className="admin-card admin-page-box" open>
+          <summary className="admin-page-box__summary">
+            <div>
+              <span>Contact page controls</span>
+              <h2>Contact Page</h2>
+              <p>Open Contact page inline mode to edit hero copy, contact details, imagery, and CTA content.</p>
+            </div>
+            <span className="admin-page-box__toggle" aria-hidden="true" />
+          </summary>
+          <div className="admin-page-box__actions">
+            <a className="button button--primary" href="/admin/?edit=contact">
+              Edit Contact Page
+            </a>
+            <button className="button button--secondary" onClick={() => setResetTargetPage('contact')} type="button">
+              Reset Contact Page
+            </button>
+          </div>
+        </details>
       </div>
 
       {seedStatus ? <div className="admin-status">{seedStatus}</div> : null}
@@ -235,13 +261,15 @@ function Dashboard({ onLogout, user }) {
                 ? 'Reset About Content'
                 : resetTargetPage === 'services'
                   ? 'Reset Services Content'
+                  : resetTargetPage === 'contact'
+                    ? 'Reset Contact Content'
                   : 'Reset Home Content'}
             </span>
             <h2>
-              Reset all {resetTargetPage === 'about' ? 'About' : resetTargetPage === 'services' ? 'Services' : 'Home'} page data to the original content?
+              Reset all {resetTargetPage === 'about' ? 'About' : resetTargetPage === 'services' ? 'Services' : resetTargetPage === 'contact' ? 'Contact' : 'Home'} page data to the original content?
             </h2>
             <p>
-              This will overwrite the current {resetTargetPage === 'about' ? 'About' : resetTargetPage === 'services' ? 'Services' : 'Home'} page
+              This will overwrite the current {resetTargetPage === 'about' ? 'About' : resetTargetPage === 'services' ? 'Services' : resetTargetPage === 'contact' ? 'Contact' : 'Home'} page
               values in `sitePages/{resetTargetPage}` with the baseline hardcoded content.
             </p>
             {isSeeding ? (
@@ -276,7 +304,7 @@ export function AdminPage() {
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(() => Boolean(auth))
   const editPageId = new URLSearchParams(window.location.search).get('edit')
-  const isEditMode = editPageId === 'home' || editPageId === 'about' || editPageId === 'services'
+  const isEditMode = editPageId === 'home' || editPageId === 'about' || editPageId === 'services' || editPageId === 'contact'
 
   useEffect(() => {
     if (!auth) {
@@ -339,6 +367,8 @@ export function AdminPage() {
           <AboutPage pageId="about" />
         ) : editPageId === 'services' ? (
           <ServicesPage pageId="services" />
+        ) : editPageId === 'contact' ? (
+          <ContactPage pageId="contact" />
         ) : (
           <HomePage pageId="home" />
         )}
