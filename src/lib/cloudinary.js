@@ -21,8 +21,17 @@ export async function uploadImageToCloudinary(file, folder = 'brahamlicia/home')
 
   validateImageFile(file)
 
-  const createSignature = httpsCallable(functions, 'createCloudinaryUploadSignature')
-  const { data } = await createSignature({ folder })
+  let data
+  try {
+    const createSignature = httpsCallable(functions, 'createCloudinaryUploadSignature')
+    const result = await createSignature({ folder })
+    data = result.data
+  } catch (error) {
+    throw new Error(
+      error?.message ??
+        'Upload signature request failed. Confirm Firebase Functions deployment and Cloudinary secrets.',
+    )
+  }
 
   const formData = new FormData()
   formData.append('file', file)

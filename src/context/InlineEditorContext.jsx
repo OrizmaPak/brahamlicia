@@ -1,7 +1,7 @@
 /* eslint-disable react-refresh/only-export-components */
 import React, { createContext, useCallback, useContext, useMemo, useState } from 'react'
 import { uploadImageToCloudinary } from '../lib/cloudinary.js'
-import { saveHomeField, saveMediaAsset } from '../lib/homeContentRepository.js'
+import { saveHomeField } from '../lib/homeContentRepository.js'
 
 const InlineEditorContext = createContext({
   closeEditor: () => {},
@@ -52,7 +52,7 @@ function ConfirmSaveDialog({ fieldLabel, isSaving, onCancel, onConfirm }) {
   )
 }
 
-function InlineFieldDialog({ activeEdit, closeEditor, stageSave, user }) {
+function InlineFieldDialog({ activeEdit, closeEditor, stageSave }) {
   const [draftText, setDraftText] = useState('')
   const [draftLabel, setDraftLabel] = useState('')
   const [draftHref, setDraftHref] = useState('')
@@ -85,10 +85,9 @@ function InlineFieldDialog({ activeEdit, closeEditor, stageSave, user }) {
     try {
       const result = await uploadImageToCloudinary(file)
       setDraftSrc(result.secureUrl)
-      await saveMediaAsset({ ...result, alt: draftAlt, folder: 'brahamlicia/home' }, user)
       setUploadMessage('Upload complete. Click Done to save it live.')
     } catch (error) {
-      setUploadMessage(error.message)
+      setUploadMessage(error.message ?? 'Image upload failed. You can still replace by URL.')
     } finally {
       setIsUploading(false)
     }
@@ -242,7 +241,7 @@ export function InlineEditorProvider({ children, onExit, user }) {
         {saveError ? <div className="editor-error">{saveError}</div> : null}
         {children}
       </div>
-      <InlineFieldDialog activeEdit={activeEdit} closeEditor={closeEditor} stageSave={stageSave} user={user} />
+      <InlineFieldDialog activeEdit={activeEdit} closeEditor={closeEditor} stageSave={stageSave} />
       {pendingSave ? (
         <ConfirmSaveDialog
           fieldLabel={pendingSave.fieldLabel}
