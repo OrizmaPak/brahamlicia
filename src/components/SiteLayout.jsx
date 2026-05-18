@@ -1,6 +1,5 @@
 import React from 'react'
 import { useEffect, useState } from 'react'
-import brandLogo from '../assets/braham logo new.png'
 import {
   aboutMenuItems,
   footerLinks,
@@ -8,6 +7,8 @@ import {
   servicesMenuItems,
   siteConfig,
 } from '../content/siteContent.js'
+
+const brandLogo = '/braham-logo-new.png'
 
 function BrandMark() {
   return (
