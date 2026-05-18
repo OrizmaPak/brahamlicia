@@ -352,3 +352,38 @@ export const footerLinks = [
   { href: '/contact/', label: 'Contact' },
   { href: '/#faq', label: 'FAQ' },
 ]
+
+export const testimonials = [
+  {
+    quote:
+      'Having the right technical and product guidance helped us move faster without losing quality or strategic focus.',
+    author: 'Victor Awotidebe',
+    role: 'CTO',
+    organisation: 'FilmMakers Mart',
+    image: { alt: 'Default profile avatar', src: 'https://www.gravatar.com/avatar/?d=mp&s=64' },
+  },
+  {
+    quote:
+      'The advisory support gave us stronger clarity on product and growth priorities at a stage where every decision mattered.',
+    author: 'Samuel Ogbonyomi',
+    role: 'CEO',
+    organisation: 'PipeOps',
+    image: { alt: 'Default profile avatar', src: 'https://www.gravatar.com/avatar/?d=mp&s=64' },
+  },
+  {
+    quote:
+      'The development process became more intentional, more scalable, and much easier to align with the product we wanted to build.',
+    author: 'Oludamola Olabode',
+    role: 'CEO',
+    organisation: 'LeaseCircle',
+    image: { alt: 'Default profile avatar', src: 'https://www.gravatar.com/avatar/?d=mp&s=64' },
+  },
+  {
+    quote:
+      'We needed sharper execution and a stronger product foundation. The support helped us think long term from day one.',
+    author: 'Chiekezie Nkechukwu',
+    role: 'COO',
+    organisation: 'AptResponse',
+    image: { alt: 'Default profile avatar', src: 'https://www.gravatar.com/avatar/?d=mp&s=64' },
+  },
+]
