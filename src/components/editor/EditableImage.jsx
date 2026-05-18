@@ -28,17 +28,27 @@ export function EditableImage({ className = '', fieldKey, label, loading }) {
     }
   }
 
+  if (!isEditing) {
+    return <img alt={alt} className={className} loading={loading} src={src} />
+  }
+
   return (
-    <img
-      alt={alt}
-      className={`${className}${isEditing ? ' editable-field editable-field--image' : ''}`}
-      loading={loading}
-      onClick={handleEdit}
-      onKeyDown={handleKeyDown}
-      role={isEditing ? 'button' : undefined}
-      src={src}
-      tabIndex={isEditing ? 0 : undefined}
-    />
+    <span className="editable-image-wrap">
+      <img
+        alt={alt}
+        className={`${className} editable-field editable-field--image`.trim()}
+        loading={loading}
+        onClick={handleEdit}
+        onKeyDown={handleKeyDown}
+        role="button"
+        src={src}
+        tabIndex={0}
+      />
+      <span className="editable-image-chip" onClick={handleEdit} onKeyDown={handleKeyDown} role="button" tabIndex={0}>
+        <span aria-hidden="true" className="editable-image-chip__icon">+</span>
+        Change image
+      </span>
+    </span>
   )
 }
 
