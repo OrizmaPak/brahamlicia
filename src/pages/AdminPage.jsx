@@ -79,7 +79,7 @@ function EnquiriesInbox() {
   }, [])
 
   return (
-    <section className="admin-card admin-card--wide">
+    <section className="admin-card admin-card--wide admin-inbox-panel">
       <div className="admin-card__head">
         <div>
           <span>Inbox</span>
@@ -116,6 +116,32 @@ function EnquiriesInbox() {
         </div>
       ) : null}
     </section>
+  )
+}
+
+function PageControlPanel({ description, editHref, index, onReset, resetLabel, title }) {
+  return (
+    <details className="admin-card admin-page-box" open>
+      <summary className="admin-page-box__summary">
+        <div className="admin-page-box__identity">
+          <span className="admin-page-box__index">{String(index).padStart(2, '0')}</span>
+          <div>
+            <span>Page controls</span>
+            <h2>{title}</h2>
+            <p>{description}</p>
+          </div>
+        </div>
+        <span className="admin-page-box__toggle" aria-hidden="true" />
+      </summary>
+      <div className="admin-page-box__actions">
+        <a className="button button--primary admin-action-button admin-action-button--edit" href={editHref}>
+          Edit
+        </a>
+        <button className="button button--secondary admin-action-button admin-action-button--reset" onClick={onReset} type="button">
+          {resetLabel}
+        </button>
+      </div>
+    </details>
   )
 }
 
@@ -164,93 +190,82 @@ function Dashboard({ onLogout, user }) {
   return (
     <main className="admin-dashboard">
       <header className="admin-dashboard__header">
-        <div>
+        <div className="admin-console-copy">
           <span className="admin-kicker">Dashboard</span>
-          <h1>Manage enquiries and launch page editing.</h1>
-          <p>{user.email}</p>
+          <h1>Content Control Center</h1>
+          <p>Manage page editing, baseline resets, and enquiry review from one operational console.</p>
         </div>
-        <button className="button button--secondary" onClick={onLogout} type="button">
-          Sign out
-        </button>
+        <div className="admin-session-card">
+          <span>Authorized session</span>
+          <strong>{user.email}</strong>
+          <button className="button button--secondary" onClick={onLogout} type="button">
+            Sign out
+          </button>
+        </div>
       </header>
 
-      <div className="admin-action-grid">
-        <details className="admin-card admin-page-box" open>
-          <summary className="admin-page-box__summary">
-            <div>
-              <span>Home page controls</span>
-              <h2>Home Page</h2>
-              <p>Edit the Home page or reset it back to the original baseline content.</p>
-            </div>
-            <span className="admin-page-box__toggle" aria-hidden="true" />
-          </summary>
-          <div className="admin-page-box__actions">
-            <a className="button button--primary" href="/admin/?edit=home">
-              Edit Home Page
-            </a>
-            <button className="button button--secondary" onClick={() => setResetTargetPage('home')} type="button">
-              Reset Home Page
-            </button>
-          </div>
-        </details>
+      <section className="admin-status-strip" aria-label="Dashboard status">
+        <div>
+          <span>Editable pages</span>
+          <strong>4</strong>
+        </div>
+        <div>
+          <span>Editor mode</span>
+          <strong>Inline</strong>
+        </div>
+        <div>
+          <span>Revisions</span>
+          <strong>On save</strong>
+        </div>
+        <div>
+          <span>Content source</span>
+          <strong>Firestore</strong>
+        </div>
+      </section>
 
-        <details className="admin-card admin-page-box" open>
-          <summary className="admin-page-box__summary">
-            <div>
-              <span>About page controls</span>
-              <h2>About Page</h2>
-              <p>Open the About page in inline mode to update copy, cards, links, and images.</p>
-            </div>
-            <span className="admin-page-box__toggle" aria-hidden="true" />
-          </summary>
-          <div className="admin-page-box__actions">
-            <a className="button button--primary" href="/admin/?edit=about">
-              Edit About Page
-            </a>
-            <button className="button button--secondary" onClick={() => setResetTargetPage('about')} type="button">
-              Reset About Page
-            </button>
+      <section className="admin-workspace">
+        <div className="admin-workspace__head">
+          <div>
+            <span className="admin-kicker">Pages</span>
+            <h2>Site editing controls</h2>
           </div>
-        </details>
-
-        <details className="admin-card admin-page-box" open>
-          <summary className="admin-page-box__summary">
-            <div>
-              <span>Services page controls</span>
-              <h2>Services Page</h2>
-              <p>Open the Services page in inline mode to update cards, accordion details, images, and CTAs.</p>
-            </div>
-            <span className="admin-page-box__toggle" aria-hidden="true" />
-          </summary>
-          <div className="admin-page-box__actions">
-            <a className="button button--primary" href="/admin/?edit=services">
-              Edit Services Page
-            </a>
-            <button className="button button--secondary" onClick={() => setResetTargetPage('services')} type="button">
-              Reset Services Page
-            </button>
-          </div>
-        </details>
-
-        <details className="admin-card admin-page-box" open>
-          <summary className="admin-page-box__summary">
-            <div>
-              <span>Contact page controls</span>
-              <h2>Contact Page</h2>
-              <p>Open Contact page inline mode to edit hero copy, contact details, imagery, and CTA content.</p>
-            </div>
-            <span className="admin-page-box__toggle" aria-hidden="true" />
-          </summary>
-          <div className="admin-page-box__actions">
-            <a className="button button--primary" href="/admin/?edit=contact">
-              Edit Contact Page
-            </a>
-            <button className="button button--secondary" onClick={() => setResetTargetPage('contact')} type="button">
-              Reset Contact Page
-            </button>
-          </div>
-        </details>
-      </div>
+          <p>Edit pages directly on the live interface or reset a page to its original baseline content.</p>
+        </div>
+        <div className="admin-action-grid">
+          <PageControlPanel
+            description="Edit the Home page or reset it back to the original baseline content."
+            editHref="/admin/?edit=home"
+            index={1}
+            onReset={() => setResetTargetPage('home')}
+            resetLabel="Reset Home Page"
+            title="Home Page"
+          />
+          <PageControlPanel
+            description="Update the About page copy, cards, links, and images directly."
+            editHref="/admin/?edit=about"
+            index={2}
+            onReset={() => setResetTargetPage('about')}
+            resetLabel="Reset About Page"
+            title="About Page"
+          />
+          <PageControlPanel
+            description="Update service cards, accordion details, images, and CTAs."
+            editHref="/admin/?edit=services"
+            index={3}
+            onReset={() => setResetTargetPage('services')}
+            resetLabel="Reset Services Page"
+            title="Services Page"
+          />
+          <PageControlPanel
+            description="Edit hero copy, contact details, imagery, and CTA content."
+            editHref="/admin/?edit=contact"
+            index={4}
+            onReset={() => setResetTargetPage('contact')}
+            resetLabel="Reset Contact Page"
+            title="Contact Page"
+          />
+        </div>
+      </section>
 
       {seedStatus ? <div className="admin-status">{seedStatus}</div> : null}
       {resetTargetPage ? (
