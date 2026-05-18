@@ -10,6 +10,7 @@
   runTransaction,
   serverTimestamp,
   setDoc,
+  updateDoc,
 } from 'firebase/firestore'
 import { db, isFirebaseConfigured } from './firebase.js'
 
@@ -122,9 +123,11 @@ export async function submitEnquiry(payload) {
 
   await addDoc(collection(db, 'enquiries'), {
     ...payload,
+    archived: false,
     createdAt: serverTimestamp(),
+    notes: [],
     source: 'website',
-    status: 'new',
+    status: 'Not attended',
   })
 }
 
@@ -146,4 +149,98 @@ export function subscribeEnquiries(onChange, onError) {
       onChange([])
     },
   )
+}
+
+export function subscribeEnquiryStatuses(onChange, onError) {
+  if (!isFirebaseConfigured || !db) {
+    onChange([])
+    return () => {}
+  }
+
+  const statusesQuery = query(collection(db, 'enquiryStatuses'), orderBy('label', 'asc'))
+
+  return onSnapshot(
+    statusesQuery,
+    (snapshot) => {
+      onChange(snapshot.docs.map((item) => ({ id: item.id, ...item.data() })))
+    },
+    (error) => {
+      onError?.(error)
+      onChange([])
+    },
+  )
+}
+
+export async function createEnquiryStatus(label, user) {
+  if (!isFirebaseConfigured || !db) {
+    throw new Error('Firebase is not configured for this environment.')
+  }
+
+  const safeLabel = label.trim()
+  if (!safeLabel) {
+    throw new Error('Status label cannot be empty.')
+  }
+
+  await addDoc(collection(db, 'enquiryStatuses'), {
+    createdAt: serverTimestamp(),
+    createdBy: userMetadata(user),
+    label: safeLabel,
+  })
+}
+
+export async function updateEnquiryStatus(enquiryId, status, user) {
+  if (!isFirebaseConfigured || !db) {
+    throw new Error('Firebase is not configured for this environment.')
+  }
+
+  const safeStatus = status.trim()
+  if (!safeStatus) {
+    throw new Error('Status cannot be empty.')
+  }
+
+  await updateDoc(doc(db, 'enquiries', enquiryId), {
+    status: safeStatus,
+    updatedAt: serverTimestamp(),
+    updatedBy: userMetadata(user),
+  })
+}
+
+export async function addEnquiryNote(enquiryId, note, user) {
+  if (!isFirebaseConfigured || !db) {
+    throw new Error('Firebase is not configured for this environment.')
+  }
+
+  const safeNote = note.trim()
+  if (!safeNote) {
+    throw new Error('Note cannot be empty.')
+  }
+
+  const enquiryDocRef = doc(db, 'enquiries', enquiryId)
+  const enquirySnapshot = await getDoc(enquiryDocRef)
+  const existingNotes = enquirySnapshot.data()?.notes ?? []
+
+  await updateDoc(enquiryDocRef, {
+    notes: [
+      ...existingNotes,
+      {
+        author: user?.email ?? '',
+        createdAt: new Date().toISOString(),
+        text: safeNote,
+      },
+    ],
+    updatedAt: serverTimestamp(),
+    updatedBy: userMetadata(user),
+  })
+}
+
+export async function setEnquiryArchived(enquiryId, archived, user) {
+  if (!isFirebaseConfigured || !db) {
+    throw new Error('Firebase is not configured for this environment.')
+  }
+
+  await updateDoc(doc(db, 'enquiries', enquiryId), {
+    archived,
+    updatedAt: serverTimestamp(),
+    updatedBy: userMetadata(user),
+  })
 }

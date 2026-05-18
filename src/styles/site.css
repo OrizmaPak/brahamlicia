@@ -6809,3 +6809,151 @@ section[id] {
   color: var(--heading);
   background: #ffffff;
 }
+
+.admin-main-tabs {
+  width: min(1180px, 100%);
+  margin-inline: auto;
+  display: inline-flex;
+  gap: 0.5rem;
+  padding: 0.35rem;
+  border-radius: 12px;
+  border: 1px solid rgba(212, 220, 237, 0.9);
+  background: #ffffff;
+}
+
+.admin-main-tabs button {
+  min-height: 2.6rem;
+  padding: 0.7rem 1rem;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: transparent;
+  color: #5d6d89;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.admin-main-tabs button.is-active {
+  border-color: rgba(163, 176, 202, 0.8);
+  background: #eef3fb;
+  color: var(--primary-deep);
+}
+
+.admin-enquiries-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.8rem;
+  margin-bottom: 0.9rem;
+}
+
+.admin-tab-switch {
+  display: inline-flex;
+  gap: 0.45rem;
+}
+
+.admin-tab-switch button {
+  min-height: 2.3rem;
+  padding: 0.55rem 0.9rem;
+  border: 1px solid rgba(212, 220, 237, 0.92);
+  border-radius: 9px;
+  background: #ffffff;
+  color: #5d6d89;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.admin-tab-switch button.is-active {
+  border-color: rgba(163, 176, 202, 0.8);
+  background: #eef3fb;
+  color: var(--primary-deep);
+}
+
+.admin-status-manager {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.admin-status-manager > span {
+  color: #64748b;
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.admin-status-manager > div {
+  display: flex;
+  gap: 0.45rem;
+}
+
+.admin-status-manager input,
+.admin-enquiry__control select,
+.admin-enquiry__control textarea {
+  width: 100%;
+  border: 1px solid rgba(212, 220, 237, 0.95);
+  border-radius: 10px;
+  padding: 0.65rem 0.8rem;
+  color: var(--heading);
+  background: #ffffff;
+}
+
+.admin-status-manager input {
+  min-width: 10rem;
+}
+
+.admin-enquiry__badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin-top: 0.65rem;
+}
+
+.admin-enquiry__status,
+.admin-enquiry__archive-label {
+  display: inline-flex;
+  align-items: center;
+  min-height: 1.8rem;
+  padding: 0.22rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.76rem;
+  font-weight: 800;
+}
+
+.admin-enquiry__status {
+  color: #16495f;
+  background: #e8f7ff;
+}
+
+.admin-enquiry__archive-label {
+  color: #5f4a16;
+  background: #fff5de;
+}
+
+.admin-enquiry__notes {
+  margin-top: 0.7rem;
+  display: grid;
+  gap: 0.35rem;
+}
+
+.admin-enquiry__notes p {
+  font-size: 0.88rem;
+  line-height: 1.45;
+}
+
+.admin-enquiry__control {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.admin-enquiry__control > span {
+  color: #64748b;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.admin-enquiry__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+}

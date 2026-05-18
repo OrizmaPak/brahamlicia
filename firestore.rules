@@ -55,12 +55,18 @@ service cloud.firestore {
           'description',
           'source',
           'status',
+          'archived',
+          'notes',
           'createdAt'
         ])
         && isShortString('name', 140)
         && isShortString('email', 180)
         && isShortString('description', 3000);
       allow read, update, delete: if isAdmin();
+    }
+
+    match /enquiryStatuses/{statusId} {
+      allow read, create, update, delete: if isAdmin();
     }
 
     match /admins/{uid} {

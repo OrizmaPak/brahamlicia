@@ -18,7 +18,15 @@ import { createServicesFallbackFields } from '../content/servicesContentFields.j
 import { InlineEditorProvider } from '../context/InlineEditorContext.jsx'
 import { allowedAdminEmails, isAllowedAdminEmail } from '../lib/adminAccess.js'
 import { auth, isFirebaseConfigured } from '../lib/firebase.js'
-import { seedPageContent, subscribeEnquiries } from '../lib/homeContentRepository.js'
+import {
+  addEnquiryNote,
+  createEnquiryStatus,
+  seedPageContent,
+  setEnquiryArchived,
+  subscribeEnquiries,
+  subscribeEnquiryStatuses,
+  updateEnquiryStatus,
+} from '../lib/homeContentRepository.js'
 
 function AdminFrame({ children }) {
   return (
@@ -60,10 +68,16 @@ function LoginPanel({ error, onLogin }) {
   )
 }
 
-function EnquiriesInbox() {
+function EnquiriesInbox({ user }) {
   const [enquiries, setEnquiries] = useState([])
+  const [statuses, setStatuses] = useState([])
+  const [activeEnquiryTab, setActiveEnquiryTab] = useState('active')
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(true)
+  const [statusInput, setStatusInput] = useState('')
+  const [noteDrafts, setNoteDrafts] = useState({})
+  const [busyEnquiryId, setBusyEnquiryId] = useState('')
+  const [busyStatusId, setBusyStatusId] = useState('')
 
   useEffect(() => {
     const unsubscribe = subscribeEnquiries(
@@ -80,24 +94,147 @@ function EnquiriesInbox() {
     return unsubscribe
   }, [])
 
+  useEffect(() => {
+    const unsubscribe = subscribeEnquiryStatuses(
+      (items) => {
+        setStatuses(items)
+      },
+      (nextError) => {
+        setError(nextError.message)
+      },
+    )
+
+    return unsubscribe
+  }, [])
+
+  const statusOptions = useMemo(() => {
+    const defaults = ['Not attended', 'Attended']
+    const custom = statuses.map((item) => item.label).filter(Boolean)
+    return Array.from(new Set([...defaults, ...custom]))
+  }, [statuses])
+
+  const visibleEnquiries = useMemo(() => {
+    const isArchiveView = activeEnquiryTab === 'archived'
+    return enquiries.filter((item) => Boolean(item.archived) === isArchiveView)
+  }, [activeEnquiryTab, enquiries])
+
+  async function handleCreateStatus() {
+    if (!statusInput.trim()) return
+
+    setBusyStatusId('create-status')
+    setError('')
+    try {
+      await createEnquiryStatus(statusInput, user)
+      setStatusInput('')
+    } catch (createError) {
+      setError(createError.message)
+    } finally {
+      setBusyStatusId('')
+    }
+  }
+
+  async function handleStatusChange(enquiryId, status) {
+    setBusyEnquiryId(enquiryId)
+    setError('')
+    try {
+      await updateEnquiryStatus(enquiryId, status, user)
+    } catch (updateError) {
+      setError(updateError.message)
+    } finally {
+      setBusyEnquiryId('')
+    }
+  }
+
+  async function handleAddNote(enquiryId) {
+    const note = noteDrafts[enquiryId] ?? ''
+    if (!note.trim()) return
+
+    setBusyEnquiryId(enquiryId)
+    setError('')
+    try {
+      await addEnquiryNote(enquiryId, note, user)
+      setNoteDrafts((current) => ({ ...current, [enquiryId]: '' }))
+    } catch (noteError) {
+      setError(noteError.message)
+    } finally {
+      setBusyEnquiryId('')
+    }
+  }
+
+  async function handleArchiveToggle(enquiryId, archived) {
+    setBusyEnquiryId(enquiryId)
+    setError('')
+    try {
+      await setEnquiryArchived(enquiryId, archived, user)
+    } catch (archiveError) {
+      setError(archiveError.message)
+    } finally {
+      setBusyEnquiryId('')
+    }
+  }
+
   return (
     <section className="admin-card admin-card--wide admin-inbox-panel">
       <div className="admin-card__head">
         <div>
-          <span>Inbox</span>
-          <h2>Enquiries</h2>
+          <span>Enquiries</span>
+          <h2>View and manage enquiries</h2>
         </div>
-        <strong>{enquiries.length}</strong>
+        <strong>{visibleEnquiries.length}</strong>
       </div>
+
+      <div className="admin-enquiries-toolbar">
+        <div className="admin-tab-switch" role="tablist">
+          <button
+            className={activeEnquiryTab === 'active' ? 'is-active' : ''}
+            onClick={() => setActiveEnquiryTab('active')}
+            role="tab"
+            type="button"
+          >
+            Active
+          </button>
+          <button
+            className={activeEnquiryTab === 'archived' ? 'is-active' : ''}
+            onClick={() => setActiveEnquiryTab('archived')}
+            role="tab"
+            type="button"
+          >
+            Archive
+          </button>
+        </div>
+
+        <div className="admin-status-manager">
+          <span>Manage status</span>
+          <div>
+            <input
+              onChange={(event) => setStatusInput(event.target.value)}
+              placeholder="Add status"
+              type="text"
+              value={statusInput}
+            />
+            <button
+              className="button button--secondary"
+              disabled={busyStatusId === 'create-status'}
+              onClick={handleCreateStatus}
+              type="button"
+            >
+              {busyStatusId === 'create-status' ? 'Adding...' : 'Add'}
+            </button>
+          </div>
+        </div>
+      </div>
+
       {isLoading ? <p>Loading enquiries...</p> : null}
       {error ? <div className="admin-alert">{error}</div> : null}
-      {!isLoading && enquiries.length === 0 ? (
-        <p>No enquiries yet. Contact form submissions will appear here once Firebase is configured and rules are deployed.</p>
+      {!isLoading && visibleEnquiries.length === 0 ? (
+        <p>No enquiries in this list yet.</p>
       ) : null}
-      {enquiries.length > 0 ? (
+      {visibleEnquiries.length > 0 ? (
         <div className="admin-enquiry-list">
-          {enquiries.map((item) => {
+          {visibleEnquiries.map((item) => {
             const createdAt = item.createdAt?.toDate?.().toLocaleString?.() ?? 'No date yet'
+            const notes = Array.isArray(item.notes) ? item.notes : []
+            const isBusy = busyEnquiryId === item.id
 
             return (
               <article className="admin-enquiry" key={item.id}>
@@ -105,12 +242,64 @@ function EnquiriesInbox() {
                   <span>{createdAt}</span>
                   <h3>{item.name || 'Unnamed enquiry'}</h3>
                   <p>{item.description}</p>
+                  <div className="admin-enquiry__badges">
+                    <span className="admin-enquiry__status">{item.status || 'Not attended'}</span>
+                    {item.archived ? <span className="admin-enquiry__archive-label">Archived</span> : null}
+                  </div>
+                  {notes.length > 0 ? (
+                    <div className="admin-enquiry__notes">
+                      {notes.map((note, index) => (
+                        <p key={`${item.id}-note-${index}`}>
+                          <strong>{note.author || 'Admin'}:</strong> {note.text}
+                        </p>
+                      ))}
+                    </div>
+                  ) : null}
                 </div>
                 <div className="admin-enquiry__meta">
                   <a href={`mailto:${item.email}`}>{item.email}</a>
                   {item.phone ? <a href={`tel:${item.phone}`}>{item.phone}</a> : null}
                   <span>{item.service}</span>
                   <span>{item.nextStep}</span>
+                  <label className="admin-enquiry__control">
+                    <span>Status</span>
+                    <select
+                      disabled={isBusy}
+                      onChange={(event) => handleStatusChange(item.id, event.target.value)}
+                      value={item.status || 'Not attended'}
+                    >
+                      {statusOptions.map((status) => (
+                        <option key={status} value={status}>
+                          {status}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <label className="admin-enquiry__control">
+                    <span>Add note</span>
+                    <textarea
+                      onChange={(event) => {
+                        const value = event.target.value
+                        setNoteDrafts((current) => ({ ...current, [item.id]: value }))
+                      }}
+                      placeholder="Write note..."
+                      rows={3}
+                      value={noteDrafts[item.id] ?? ''}
+                    />
+                  </label>
+                  <div className="admin-enquiry__actions">
+                    <button className="button button--secondary" disabled={isBusy} onClick={() => handleAddNote(item.id)} type="button">
+                      Add note
+                    </button>
+                    <button
+                      className="button button--secondary"
+                      disabled={isBusy}
+                      onClick={() => handleArchiveToggle(item.id, !item.archived)}
+                      type="button"
+                    >
+                      {item.archived ? 'Unarchive' : 'Archive'}
+                    </button>
+                  </div>
                 </div>
               </article>
             )
@@ -157,6 +346,7 @@ const pageLabels = {
 }
 
 function Dashboard({ onLogout, user }) {
+  const [activeTab, setActiveTab] = useState('edit')
   const [seedStatus, setSeedStatus] = useState('')
   const [isSeeding, setIsSeeding] = useState(false)
   const [resetTargetPage, setResetTargetPage] = useState(null)
@@ -209,59 +399,80 @@ function Dashboard({ onLogout, user }) {
         </div>
       </header>
 
-      <section className="admin-workspace">
-        <div className="admin-workspace__head">
-          <div>
-            <span className="admin-kicker">Pages</span>
-            <h2>Choose what to edit</h2>
-          </div>
-          <p>Open inline editor or reset a page to baseline.</p>
-        </div>
-        <div className="admin-action-grid">
-          <PageControlPanel
-            description="Hero, sections, links, images."
-            editHref="/admin/?edit=home"
-            index={1}
-            onReset={() => setResetTargetPage('home')}
-            resetLabel="Reset Home Page"
-            title="Home Page"
-          />
-          <PageControlPanel
-            description="Story, values, audience, insights."
-            editHref="/admin/?edit=about"
-            index={2}
-            onReset={() => setResetTargetPage('about')}
-            resetLabel="Reset About Page"
-            title="About Page"
-          />
-          <PageControlPanel
-            description="Cards, details, process, calls to action."
-            editHref="/admin/?edit=services"
-            index={3}
-            onReset={() => setResetTargetPage('services')}
-            resetLabel="Reset Services Page"
-            title="Services Page"
-          />
-          <PageControlPanel
-            description="Hero, contact details, sidebar, CTA."
-            editHref="/admin/?edit=contact"
-            index={4}
-            onReset={() => setResetTargetPage('contact')}
-            resetLabel="Reset Contact Page"
-            title="Contact Page"
-          />
-          <PageControlPanel
-            description="Brand, quick links, contact, footer notes."
-            editHref="/admin/?edit=footer"
-            index={5}
-            onReset={() => setResetTargetPage('footer')}
-            resetLabel="Reset Footer"
-            title="Global Footer"
-          />
-        </div>
+      <section className="admin-main-tabs">
+        <button
+          className={activeTab === 'edit' ? 'is-active' : ''}
+          onClick={() => setActiveTab('edit')}
+          type="button"
+        >
+          Edit page
+        </button>
+        <button
+          className={activeTab === 'enquiries' ? 'is-active' : ''}
+          onClick={() => setActiveTab('enquiries')}
+          type="button"
+        >
+          View enquiries
+        </button>
       </section>
 
-      {seedStatus ? <div className="admin-status">{seedStatus}</div> : null}
+      {activeTab === 'edit' ? (
+        <section className="admin-workspace">
+          <div className="admin-workspace__head">
+            <div>
+              <span className="admin-kicker">Pages</span>
+              <h2>Choose what to edit</h2>
+            </div>
+            <p>Open inline editor or reset a page to baseline.</p>
+          </div>
+          <div className="admin-action-grid">
+            <PageControlPanel
+              description="Hero, sections, links, images."
+              editHref="/admin/?edit=home"
+              index={1}
+              onReset={() => setResetTargetPage('home')}
+              resetLabel="Reset Home Page"
+              title="Home Page"
+            />
+            <PageControlPanel
+              description="Story, values, audience, insights."
+              editHref="/admin/?edit=about"
+              index={2}
+              onReset={() => setResetTargetPage('about')}
+              resetLabel="Reset About Page"
+              title="About Page"
+            />
+            <PageControlPanel
+              description="Cards, details, process, calls to action."
+              editHref="/admin/?edit=services"
+              index={3}
+              onReset={() => setResetTargetPage('services')}
+              resetLabel="Reset Services Page"
+              title="Services Page"
+            />
+            <PageControlPanel
+              description="Hero, contact details, sidebar, CTA."
+              editHref="/admin/?edit=contact"
+              index={4}
+              onReset={() => setResetTargetPage('contact')}
+              resetLabel="Reset Contact Page"
+              title="Contact Page"
+            />
+            <PageControlPanel
+              description="Brand, quick links, contact, footer notes."
+              editHref="/admin/?edit=footer"
+              index={5}
+              onReset={() => setResetTargetPage('footer')}
+              resetLabel="Reset Footer"
+              title="Global Footer"
+            />
+          </div>
+        </section>
+      ) : (
+        <EnquiriesInbox user={user} />
+      )}
+
+      {activeTab === 'edit' && seedStatus ? <div className="admin-status">{seedStatus}</div> : null}
       {resetTargetPage ? (
         <div aria-modal="true" className="editor-modal" role="dialog">
           <div className="editor-modal__panel admin-seed-modal">
@@ -297,7 +508,6 @@ function Dashboard({ onLogout, user }) {
           </div>
         </div>
       ) : null}
-      <EnquiriesInbox />
     </main>
   )
 }
