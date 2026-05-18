@@ -1,13 +1,11 @@
 import React from 'react'
-import { SkeletonGrid } from '../components/ContentSkeleton.jsx'
 import { SectionHeading } from '../components/SectionHeading.jsx'
 import { ServiceAccordion } from '../components/ServiceAccordion.jsx'
 import { SiteLayout } from '../components/SiteLayout.jsx'
 import { useSiteContent } from '../context/useSiteContent.js'
 
 export function ServicesPage({ pageId }) {
-  const { contentMeta, imageLibrary, processSteps, serviceOfferings } = useSiteContent()
-  const isContentLoading = contentMeta.isLoading
+  const { imageLibrary, processSteps, serviceOfferings } = useSiteContent()
 
   return (
     <SiteLayout pageId={pageId}>
@@ -37,11 +35,8 @@ export function ServicesPage({ pageId }) {
             title="Support designed around real needs and practical outcomes."
             description="Braham Licia Consulting offers services across consulting, training, and advisory support, with each service tailored to real needs and stronger execution."
           />
-          {isContentLoading ? (
-            <SkeletonGrid count={3} />
-          ) : (
-            <div className="card-grid card-grid--services">
-              {serviceOfferings.map((service, index) => (
+          <div className="card-grid card-grid--services">
+            {serviceOfferings.map((service, index) => (
               <article
                 className="service-card service-card--compact"
                 data-reveal
@@ -58,9 +53,8 @@ export function ServicesPage({ pageId }) {
                   Open details
                 </a>
               </article>
-              ))}
-            </div>
-          )}
+            ))}
+          </div>
         </div>
       </section>
 
@@ -121,7 +115,7 @@ export function ServicesPage({ pageId }) {
             title="Detailed pathways inside a single guided services experience."
             description="Each dropdown below expands to show scope, focus areas, expected outcomes, and the next best call to action."
           />
-          {isContentLoading ? <SkeletonGrid count={3} /> : <ServiceAccordion services={serviceOfferings} />}
+          <ServiceAccordion services={serviceOfferings} />
         </div>
       </section>
 
@@ -131,11 +125,8 @@ export function ServicesPage({ pageId }) {
             eyebrow="How engagements work"
             title="A structured delivery rhythm that stays flexible to your context."
           />
-          {isContentLoading ? (
-            <SkeletonGrid count={4} />
-          ) : (
-            <div className="timeline-grid">
-              {processSteps.map((step, index) => (
+          <div className="timeline-grid">
+            {processSteps.map((step, index) => (
               <article
                 className="timeline-card"
                 data-reveal
@@ -146,9 +137,8 @@ export function ServicesPage({ pageId }) {
                 <h3>{step.title}</h3>
                 <p>{step.description}</p>
               </article>
-              ))}
-            </div>
-          )}
+            ))}
+          </div>
         </div>
       </section>
 

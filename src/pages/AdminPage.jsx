@@ -6,22 +6,17 @@ import { defaultSiteContent } from '../content/defaultContent.js'
 import {
   deleteContentItem,
   editableSections,
-  exportCurrentCmsContent,
   getEnquiries,
   isAdminUser,
   publishDraftItem,
   publishSettings,
-  publishSingleton,
   saveDraftItem,
   saveDraftSettings,
-  saveDraftSingleton,
   saveMediaAsset,
   seedContentToFirestore,
   slugify,
-  singletonSections,
   subscribeToSection,
   subscribeToSettings,
-  subscribeToSingleton,
   unpublishItem,
 } from '../lib/contentRepository.js'
 
@@ -174,21 +169,6 @@ function itemTitle(item, sectionName) {
   return item.title
 }
 
-function formatJson(value) {
-  return JSON.stringify(value ?? null, null, 2)
-}
-
-function downloadJson(filename, value) {
-  const safeFilename = filename.replace(/[:]/g, '-')
-  const blob = new Blob([JSON.stringify(value, null, 2)], { type: 'application/json' })
-  const url = URL.createObjectURL(blob)
-  const link = document.createElement('a')
-  link.href = url
-  link.download = safeFilename
-  link.click()
-  URL.revokeObjectURL(url)
-}
-
 function LoginPanel() {
   const [error, setError] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -287,208 +267,6 @@ function SettingsEditor({ setStatus }) {
             />
           </label>
         ))}
-      </div>
-    </section>
-  )
-}
-
-function ImageLibraryEditor({ setStatus }) {
-  const [images, setImages] = useState(defaultSiteContent.imageLibrary)
-  const [uploadingKey, setUploadingKey] = useState('')
-
-  useEffect(() => {
-    return subscribeToSingleton(
-      'cmsDrafts',
-      'imageLibrary',
-      (draftImages) => setImages(draftImages?.value ?? defaultSiteContent.imageLibrary),
-      (error) => setStatus(`Image library load failed: ${error.message}`),
-    )
-  }, [setStatus])
-
-  function updateImage(imageKey, field, value) {
-    setImages((current) => ({
-      ...current,
-      [imageKey]: {
-        ...(current[imageKey] ?? {}),
-        [field]: value,
-      },
-    }))
-  }
-
-  async function handleImageUpload(file, imageKey) {
-    if (!file) return
-
-    setUploadingKey(imageKey)
-    setStatus('')
-
-    try {
-      const asset = await uploadImageToCloudinary(file, `cms/image-library/${imageKey}`)
-      await saveMediaAsset({
-        alt: images[imageKey]?.alt ?? '',
-        bytes: asset.bytes,
-        format: asset.format,
-        height: asset.height,
-        public_id: asset.publicId,
-        section: 'imageLibrary',
-        secure_url: asset.secureUrl,
-        width: asset.width,
-      })
-      updateImage(imageKey, 'src', asset.secureUrl)
-      setStatus('Image uploaded.')
-    } catch (error) {
-      setStatus(error.message)
-    } finally {
-      setUploadingKey('')
-    }
-  }
-
-  async function handleSave(action) {
-    setStatus('')
-
-    try {
-      if (action === 'publish') {
-        await publishSingleton('imageLibrary', images)
-        setStatus('Image library published.')
-      } else {
-        await saveDraftSingleton('imageLibrary', images)
-        setStatus('Image library draft saved.')
-      }
-    } catch (error) {
-      setStatus(error.message)
-    }
-  }
-
-  return (
-    <section className="admin-panel">
-      <div className="admin-panel__head">
-        <div>
-          <p className="admin-eyebrow">Site media</p>
-          <h2>Image library</h2>
-        </div>
-        <div className="admin-actions">
-          <button className="admin-button" onClick={() => handleSave('draft')} type="button">
-            Save draft
-          </button>
-          <button className="admin-button admin-button--primary" onClick={() => handleSave('publish')} type="button">
-            Publish
-          </button>
-        </div>
-      </div>
-
-      <div className="admin-image-library">
-        {Object.entries(images).map(([imageKey, image]) => (
-          <article className="admin-image-row" key={imageKey}>
-            <figure>
-              <img alt={image.alt ?? ''} src={image.src} />
-            </figure>
-            <div className="admin-form">
-              <label>
-                <span>{imageKey} URL</span>
-                <input onChange={(event) => updateImage(imageKey, 'src', event.target.value)} value={image.src ?? ''} />
-              </label>
-              <label>
-                <span>Alt text</span>
-                <input onChange={(event) => updateImage(imageKey, 'alt', event.target.value)} value={image.alt ?? ''} />
-              </label>
-              <label>
-                <span>Upload replacement</span>
-                <input
-                  accept="image/png,image/jpeg,image/webp"
-                  disabled={uploadingKey === imageKey}
-                  onChange={(event) => handleImageUpload(event.target.files?.[0], imageKey)}
-                  type="file"
-                />
-              </label>
-            </div>
-          </article>
-        ))}
-      </div>
-    </section>
-  )
-}
-
-function StructuredContentEditor({ setStatus }) {
-  const sections = singletonSections.filter((section) => section.type === 'json')
-  const [activeSection, setActiveSection] = useState(sections[0]?.collectionName ?? 'heroMoments')
-  const [jsonValue, setJsonValue] = useState('')
-  const section = sections.find((item) => item.collectionName === activeSection)
-
-  useEffect(() => {
-    if (!section) return undefined
-
-    return subscribeToSingleton(
-      'cmsDrafts',
-      section.collectionName,
-      (draftContent) => {
-        setJsonValue(formatJson(draftContent?.value ?? defaultSiteContent[section.contentKey]))
-      },
-      (error) => setStatus(`${section.label} load failed: ${error.message}`),
-    )
-  }, [section, setStatus])
-
-  async function handleSave(action) {
-    setStatus('')
-
-    try {
-      const parsed = JSON.parse(jsonValue)
-      if (action === 'publish') {
-        await publishSingleton(section.collectionName, parsed)
-        setStatus(`${section.label} published.`)
-      } else {
-        await saveDraftSingleton(section.collectionName, parsed)
-        setStatus(`${section.label} draft saved.`)
-      }
-    } catch (error) {
-      setStatus(error.message)
-    }
-  }
-
-  return (
-    <section className="admin-panel admin-panel--split">
-      <div className="admin-list">
-        <div className="admin-panel__head">
-          <div>
-            <p className="admin-eyebrow">Structured content</p>
-            <h2>Global groups</h2>
-          </div>
-        </div>
-        <div className="admin-list__items">
-          {sections.map((item) => (
-            <button
-              className={`admin-list__item${activeSection === item.collectionName ? ' is-active' : ''}`}
-              key={item.collectionName}
-              onClick={() => setActiveSection(item.collectionName)}
-              type="button"
-            >
-              <strong>{item.label}</strong>
-              <span>{item.collectionName}</span>
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <div className="admin-editor">
-        <div className="admin-panel__head">
-          <div>
-            <p className="admin-eyebrow">{section?.collectionName}</p>
-            <h2>{section?.label}</h2>
-          </div>
-          <div className="admin-actions">
-            <button className="admin-button" onClick={() => handleSave('draft')} type="button">
-              Save draft
-            </button>
-            <button className="admin-button admin-button--primary" onClick={() => handleSave('publish')} type="button">
-              Publish
-            </button>
-          </div>
-        </div>
-        <div className="admin-json-editor">
-          <textarea
-            onChange={(event) => setJsonValue(event.target.value)}
-            spellCheck="false"
-            value={jsonValue}
-          />
-        </div>
       </div>
     </section>
   )
@@ -864,8 +642,6 @@ function AdminDashboard({ user }) {
   const navigation = useMemo(
     () => [
       { id: 'settings', label: 'Settings' },
-      { id: 'images', label: 'Images' },
-      { id: 'structured', label: 'Structured' },
       ...editableSections.map((section) => ({
         id: section.collectionName,
         label: section.label,
@@ -879,22 +655,8 @@ function AdminDashboard({ user }) {
     setStatus('')
 
     try {
-      const backup = await exportCurrentCmsContent()
-      downloadJson(`firebase-content-backup-${new Date().toISOString()}.json`, backup)
       await seedContentToFirestore(defaultSiteContent)
-      setStatus('Backup downloaded. Default content and image references seeded to drafts and published content.')
-    } catch (error) {
-      setStatus(error.message)
-    }
-  }
-
-  async function handleBackup() {
-    setStatus('')
-
-    try {
-      const backup = await exportCurrentCmsContent()
-      downloadJson(`firebase-content-backup-${new Date().toISOString()}.json`, backup)
-      setStatus('Firebase content backup downloaded.')
+      setStatus('Default content seeded to drafts and published content.')
     } catch (error) {
       setStatus(error.message)
     }
@@ -921,11 +683,8 @@ function AdminDashboard({ user }) {
         </nav>
         <div className="admin-sidebar__footer">
           <span>{user.email}</span>
-          <button className="admin-button" onClick={handleBackup} type="button">
-            Backup CMS
-          </button>
           <button className="admin-button" onClick={handleSeed} type="button">
-            Backup and seed
+            Seed defaults
           </button>
           <button className="admin-button" onClick={() => signOut(auth)} type="button">
             Sign out
@@ -936,8 +695,6 @@ function AdminDashboard({ user }) {
       <div className="admin-main">
         {status ? <p className="admin-status">{status}</p> : null}
         {activeSection === 'settings' ? <SettingsEditor setStatus={setStatus} /> : null}
-        {activeSection === 'images' ? <ImageLibraryEditor setStatus={setStatus} /> : null}
-        {activeSection === 'structured' ? <StructuredContentEditor setStatus={setStatus} /> : null}
         {editableSections.some((section) => section.collectionName === activeSection) ? (
           <SectionEditor sectionName={activeSection} setStatus={setStatus} />
         ) : null}

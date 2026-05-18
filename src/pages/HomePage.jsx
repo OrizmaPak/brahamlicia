@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react'
-import { SkeletonGrid } from '../components/ContentSkeleton.jsx'
 import { SectionHeading } from '../components/SectionHeading.jsx'
 import { SiteLayout } from '../components/SiteLayout.jsx'
 import { useSiteContent } from '../context/useSiteContent.js'
@@ -112,7 +111,6 @@ export function HomePage({ pageId }) {
     heroMoments,
     homeHighlights,
     imageLibrary,
-    contentMeta,
     testimonials,
     processSteps,
     serviceOfferings,
@@ -131,7 +129,6 @@ export function HomePage({ pageId }) {
   }, [activeHeroMoment, heroMoments.length])
 
   const activeMoment = heroMoments[activeHeroMoment]
-  const isContentLoading = contentMeta.isLoading
 
   return (
     <SiteLayout pageId={pageId}>
@@ -288,11 +285,8 @@ export function HomePage({ pageId }) {
             description="Start with the support you need most: sharper strategy, stronger people, or better project delivery."
             align="center"
           />
-          {isContentLoading ? (
-            <SkeletonGrid count={3} />
-          ) : (
-            <div className="card-grid card-grid--services">
-              {serviceOfferings.map((service, index) => (
+          <div className="card-grid card-grid--services">
+            {serviceOfferings.map((service, index) => (
               <article
                 className="service-card service-card--showcase"
                 data-reveal
@@ -317,9 +311,8 @@ export function HomePage({ pageId }) {
                   </div>
                 </a>
               </article>
-              ))}
-            </div>
-          )}
+            ))}
+          </div>
         </div>
       </section>
 
@@ -451,11 +444,8 @@ export function HomePage({ pageId }) {
             title="A strong fit for businesses, institutions, teams, and professionals."
             description="If you need clearer strategy, stronger capability, or more organised delivery, there is likely a good fit."
           />
-          {isContentLoading ? (
-            <SkeletonGrid count={4} />
-          ) : (
-            <div className="card-grid card-grid--two">
-              {audiences.map((audience, index) => (
+          <div className="card-grid card-grid--two">
+            {audiences.map((audience, index) => (
               <article
                 className="audience-card"
                 data-reveal
@@ -465,9 +455,8 @@ export function HomePage({ pageId }) {
                 <h3>{audience.title}</h3>
                 <p>{audience.description}</p>
               </article>
-              ))}
-            </div>
-          )}
+            ))}
+          </div>
           <div className="button-row section-actions" data-reveal style={{ '--delay': '160ms' }}>
             <a className="button button--secondary" href="/about/#who-we-serve">
               See who we support
@@ -496,7 +485,7 @@ export function HomePage({ pageId }) {
           </div>
 
           <div className="faq-stack" data-reveal style={{ '--delay': '120ms' }}>
-            {isContentLoading ? <SkeletonGrid count={5} variant="faq" /> : faqItems.map((item) => (
+            {faqItems.map((item) => (
               <details
                 className="faq-item"
                 key={item.question}
@@ -525,10 +514,7 @@ export function HomePage({ pageId }) {
             title="Calm structure. Practical delivery. Real client impact."
             description="A stronger look at the kind of clarity, confidence, and follow-through clients describe after the work lands."
           />
-          {isContentLoading ? (
-            <SkeletonGrid count={4} />
-          ) : (
-            <div className="testimonials-stage">
+          <div className="testimonials-stage">
             {featuredTestimonial ? (
               <article className="testimonial-feature" data-reveal style={{ '--delay': '120ms' }}>
                 <div className="testimonial-feature__visual" aria-hidden="true">
@@ -585,7 +571,6 @@ export function HomePage({ pageId }) {
               ))}
             </div>
           </div>
-          )}
         </div>
       </section>
 

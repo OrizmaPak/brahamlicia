@@ -5360,119 +5360,6 @@ section[id] {
   color: #1e293b;
 }
 
-.content-skeleton {
-  display: grid;
-  gap: 0.85rem;
-  min-height: 10rem;
-  border: 1px solid rgba(212, 220, 237, 0.9);
-  border-radius: var(--radius-sm);
-  padding: 1.1rem;
-  background: rgba(255, 255, 255, 0.7);
-  overflow: hidden;
-}
-
-.content-skeleton span {
-  display: block;
-  height: 0.9rem;
-  border-radius: 999px;
-  background:
-    linear-gradient(90deg, rgba(232, 237, 246, 0.88), rgba(255, 255, 255, 0.95), rgba(232, 237, 246, 0.88));
-  background-size: 220% 100%;
-  animation: skeletonSweep 1.15s ease-in-out infinite;
-}
-
-.content-skeleton span:first-child {
-  height: 9rem;
-  border-radius: var(--radius-sm);
-}
-
-.content-skeleton span:nth-child(2) {
-  width: 74%;
-}
-
-.content-skeleton span:nth-child(3) {
-  width: 92%;
-}
-
-.content-skeleton span:nth-child(4) {
-  width: 58%;
-}
-
-.skeleton-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 1rem;
-  width: 100%;
-}
-
-.skeleton-grid--faq {
-  grid-template-columns: 1fr;
-}
-
-.skeleton-grid--faq .content-skeleton {
-  min-height: 5rem;
-}
-
-.skeleton-grid--faq .content-skeleton span:first-child {
-  height: 1rem;
-}
-
-.admin-image-library {
-  display: grid;
-  gap: 0.9rem;
-  padding: 1rem;
-}
-
-.admin-image-row {
-  display: grid;
-  grid-template-columns: 180px 1fr;
-  gap: 1rem;
-  align-items: start;
-  border: 1px solid #e4eaf3;
-  border-radius: 8px;
-  padding: 0.9rem;
-  background: #f8fafc;
-}
-
-.admin-image-row figure {
-  border: 1px solid #d9e1ef;
-  border-radius: 8px;
-  overflow: hidden;
-  background: #ffffff;
-}
-
-.admin-image-row img {
-  aspect-ratio: 4 / 3;
-  object-fit: cover;
-}
-
-.admin-json-editor {
-  padding: 1rem;
-}
-
-.admin-json-editor textarea {
-  width: 100%;
-  min-height: 62vh;
-  border: 1px solid #cbd5e1;
-  border-radius: 8px;
-  padding: 1rem;
-  color: #1e293b;
-  font-family: Consolas, 'Courier New', monospace;
-  font-size: 0.9rem;
-  line-height: 1.65;
-  resize: vertical;
-}
-
-@keyframes skeletonSweep {
-  0% {
-    background-position: 200% 0;
-  }
-
-  100% {
-    background-position: -200% 0;
-  }
-}
-
 @media (max-width: 980px) {
   .admin-shell,
   .admin-panel--split {
@@ -5495,12 +5382,7 @@ section[id] {
 
   .admin-form--grid,
   .admin-image-field,
-  .admin-image-row,
   .admin-enquiry dl {
-    grid-template-columns: 1fr;
-  }
-
-  .skeleton-grid {
     grid-template-columns: 1fr;
   }
 
