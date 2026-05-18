@@ -7,8 +7,10 @@ import {
 } from 'firebase/auth'
 import { AboutPage } from './AboutPage.jsx'
 import { HomePage } from './HomePage.jsx'
+import { ServicesPage } from './ServicesPage.jsx'
 import { createAboutFallbackFields } from '../content/aboutContentFields.js'
 import { createHomeFallbackFields } from '../content/homeContentFields.js'
+import { createServicesFallbackFields } from '../content/servicesContentFields.js'
 import { InlineEditorProvider } from '../context/InlineEditorContext.jsx'
 import { allowedAdminEmails, isAllowedAdminEmail } from '../lib/adminAccess.js'
 import { auth, isFirebaseConfigured } from '../lib/firebase.js'
@@ -121,16 +123,27 @@ function Dashboard({ onLogout, user }) {
   const [resetTargetPage, setResetTargetPage] = useState(null)
   const homeFallbackFields = useMemo(() => createHomeFallbackFields(), [])
   const aboutFallbackFields = useMemo(() => createAboutFallbackFields(), [])
+  const servicesFallbackFields = useMemo(() => createServicesFallbackFields(), [])
 
   async function handleResetPage() {
     if (!resetTargetPage) return
 
     setIsSeeding(true)
-    const pageLabel = resetTargetPage === 'about' ? 'About' : 'Home'
+    const pageLabel =
+      resetTargetPage === 'about'
+        ? 'About'
+        : resetTargetPage === 'services'
+          ? 'Services'
+          : 'Home'
     setSeedStatus(`Resetting all ${pageLabel} page content to the original values...`)
 
     try {
-      const fields = resetTargetPage === 'about' ? aboutFallbackFields : homeFallbackFields
+      const fields =
+        resetTargetPage === 'about'
+          ? aboutFallbackFields
+          : resetTargetPage === 'services'
+            ? servicesFallbackFields
+            : homeFallbackFields
       await seedPageContent(resetTargetPage, fields, user)
       setSeedStatus(`${pageLabel} fallback content has been written to Firestore.`)
     } catch (error) {
@@ -192,6 +205,25 @@ function Dashboard({ onLogout, user }) {
             </button>
           </div>
         </details>
+
+        <details className="admin-card admin-page-box" open>
+          <summary className="admin-page-box__summary">
+            <div>
+              <span>Services page controls</span>
+              <h2>Services Page</h2>
+              <p>Open the Services page in inline mode to update cards, accordion details, images, and CTAs.</p>
+            </div>
+            <span className="admin-page-box__toggle" aria-hidden="true" />
+          </summary>
+          <div className="admin-page-box__actions">
+            <a className="button button--primary" href="/admin/?edit=services">
+              Edit Services Page
+            </a>
+            <button className="button button--secondary" onClick={() => setResetTargetPage('services')} type="button">
+              Reset Services Page
+            </button>
+          </div>
+        </details>
       </div>
 
       {seedStatus ? <div className="admin-status">{seedStatus}</div> : null}
@@ -199,13 +231,17 @@ function Dashboard({ onLogout, user }) {
         <div aria-modal="true" className="editor-modal" role="dialog">
           <div className="editor-modal__panel admin-seed-modal">
             <span className="editor-modal__eyebrow">
-              {resetTargetPage === 'about' ? 'Reset About Content' : 'Reset Home Content'}
+              {resetTargetPage === 'about'
+                ? 'Reset About Content'
+                : resetTargetPage === 'services'
+                  ? 'Reset Services Content'
+                  : 'Reset Home Content'}
             </span>
             <h2>
-              Reset all {resetTargetPage === 'about' ? 'About' : 'Home'} page data to the original content?
+              Reset all {resetTargetPage === 'about' ? 'About' : resetTargetPage === 'services' ? 'Services' : 'Home'} page data to the original content?
             </h2>
             <p>
-              This will overwrite the current {resetTargetPage === 'about' ? 'About' : 'Home'} page
+              This will overwrite the current {resetTargetPage === 'about' ? 'About' : resetTargetPage === 'services' ? 'Services' : 'Home'} page
               values in `sitePages/{resetTargetPage}` with the baseline hardcoded content.
             </p>
             {isSeeding ? (
@@ -240,7 +276,7 @@ export function AdminPage() {
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(() => Boolean(auth))
   const editPageId = new URLSearchParams(window.location.search).get('edit')
-  const isEditMode = editPageId === 'home' || editPageId === 'about'
+  const isEditMode = editPageId === 'home' || editPageId === 'about' || editPageId === 'services'
 
   useEffect(() => {
     if (!auth) {
@@ -299,7 +335,13 @@ export function AdminPage() {
   if (isEditMode) {
     return (
       <InlineEditorProvider onExit={() => window.location.assign('/admin/')} pageId={editPageId} user={authUser}>
-        {editPageId === 'about' ? <AboutPage pageId="about" /> : <HomePage pageId="home" />}
+        {editPageId === 'about' ? (
+          <AboutPage pageId="about" />
+        ) : editPageId === 'services' ? (
+          <ServicesPage pageId="services" />
+        ) : (
+          <HomePage pageId="home" />
+        )}
       </InlineEditorProvider>
     )
   }
