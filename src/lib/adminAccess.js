@@ -1,4 +1,4 @@
-export const allowedAdminEmails = ['orevaorior@gmail.com', 'jovisamblue@gmail.com']
+export const allowedAdminEmails = ['orevaorior@gmail.com', 'jovisamblue@gmail.com', 'olumuyiwa.sobayo@gmail.com']
 
 export function isAllowedAdminEmail(email) {
   if (!email) return false
