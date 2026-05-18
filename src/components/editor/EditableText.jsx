@@ -1,9 +1,9 @@
-import React from 'react'
-import { useHomeField } from '../../context/HomeContentContext.jsx'
+﻿import React from 'react'
+import { usePageField } from '../../context/PageContentContext.jsx'
 import { useInlineEditor } from '../../context/InlineEditorContext.jsx'
 
 export function EditableText({ as = 'span', className = '', fieldKey, label, multiline = false }) {
-  const field = useHomeField(fieldKey)
+  const field = usePageField(fieldKey)
   const { isEditing, openEditor } = useInlineEditor()
   const value = field?.value ?? ''
 
@@ -35,3 +35,6 @@ export function EditableText({ as = 'span', className = '', fieldKey, label, mul
     value,
   )
 }
+
+
+

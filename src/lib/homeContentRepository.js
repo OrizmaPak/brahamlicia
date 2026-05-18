@@ -1,4 +1,4 @@
-import {
+﻿import {
   addDoc,
   collection,
   doc,
@@ -13,7 +13,13 @@ import {
 } from 'firebase/firestore'
 import { db, isFirebaseConfigured } from './firebase.js'
 
-const homePageRef = () => doc(db, 'sitePages', 'home')
+function pageRef(pageId) {
+  return doc(db, 'sitePages', pageId)
+}
+
+function revisionCollection(pageId) {
+  return collection(db, 'sitePageRevisions', pageId, 'items')
+}
 
 function userMetadata(user) {
   return {
@@ -23,14 +29,14 @@ function userMetadata(user) {
   }
 }
 
-export function subscribeHomeContent(onChange, onError) {
+export function subscribePageContent(pageId, onChange, onError) {
   if (!isFirebaseConfigured || !db) {
     onChange({ fields: {}, source: 'fallback' })
     return () => {}
   }
 
   return onSnapshot(
-    homePageRef(),
+    pageRef(pageId),
     (snapshot) => {
       if (!snapshot.exists()) {
         onChange({ fields: {}, source: 'fallback' })
@@ -46,28 +52,28 @@ export function subscribeHomeContent(onChange, onError) {
   )
 }
 
-export async function saveHomeField(fieldKey, fieldValue, user) {
+export async function savePageField(pageId, fieldKey, fieldValue, user) {
   if (!isFirebaseConfigured || !db) {
     throw new Error('Firebase is not configured for this environment.')
   }
 
   await runTransaction(db, async (transaction) => {
-    const pageRef = homePageRef()
-    const pageSnapshot = await transaction.get(pageRef)
+    const currentPageRef = pageRef(pageId)
+    const pageSnapshot = await transaction.get(currentPageRef)
     const editor = userMetadata(user)
 
     if (pageSnapshot.exists()) {
-      const revisionRef = doc(collection(db, 'sitePageRevisions', 'home', 'items'))
+      const revisionRef = doc(revisionCollection(pageId))
       transaction.set(revisionRef, {
         ...pageSnapshot.data(),
         createdAt: serverTimestamp(),
         createdBy: editor,
-        revisionOf: 'sitePages/home',
+        revisionOf: `sitePages/${pageId}`,
       })
     }
 
     transaction.set(
-      pageRef,
+      currentPageRef,
       {
         fields: {
           [fieldKey]: fieldValue,
@@ -80,26 +86,26 @@ export async function saveHomeField(fieldKey, fieldValue, user) {
   })
 }
 
-export async function seedHomeContent(fields, user) {
+export async function seedPageContent(pageId, fields, user) {
   if (!isFirebaseConfigured || !db) {
     throw new Error('Firebase is not configured for this environment.')
   }
 
   const editor = userMetadata(user)
-  const pageRef = homePageRef()
-  const existing = await getDoc(pageRef)
+  const currentPageRef = pageRef(pageId)
+  const existing = await getDoc(currentPageRef)
 
   if (existing.exists()) {
-    await addDoc(collection(db, 'sitePageRevisions', 'home', 'items'), {
+    await addDoc(revisionCollection(pageId), {
       ...existing.data(),
       createdAt: serverTimestamp(),
       createdBy: editor,
-      revisionOf: 'sitePages/home',
+      revisionOf: `sitePages/${pageId}`,
     })
   }
 
   await setDoc(
-    pageRef,
+    currentPageRef,
     {
       fields,
       updatedAt: serverTimestamp(),
@@ -119,25 +125,6 @@ export async function submitEnquiry(payload) {
     createdAt: serverTimestamp(),
     source: 'website',
     status: 'new',
-  })
-}
-
-export async function saveMediaAsset(asset, user) {
-  if (!isFirebaseConfigured || !db) {
-    throw new Error('Firebase is not configured for this environment.')
-  }
-
-  await addDoc(collection(db, 'mediaAssets'), {
-    alt: asset.alt ?? '',
-    bytes: asset.bytes ?? null,
-    createdAt: serverTimestamp(),
-    createdBy: userMetadata(user),
-    folder: asset.folder ?? 'brahamlicia/home',
-    format: asset.format ?? '',
-    height: asset.height ?? null,
-    public_id: asset.publicId,
-    secure_url: asset.secureUrl,
-    width: asset.width ?? null,
   })
 }
 

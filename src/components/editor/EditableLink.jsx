@@ -1,9 +1,9 @@
-import React from 'react'
-import { useHomeField } from '../../context/HomeContentContext.jsx'
+﻿import React from 'react'
+import { usePageField } from '../../context/PageContentContext.jsx'
 import { useInlineEditor } from '../../context/InlineEditorContext.jsx'
 
 export function EditableLink({ className = '', fieldKey, label }) {
-  const field = useHomeField(fieldKey)
+  const field = usePageField(fieldKey)
   const { isEditing, openEditor } = useInlineEditor()
   const linkLabel = field?.label ?? ''
   const href = field?.href ?? '#'
@@ -22,3 +22,6 @@ export function EditableLink({ className = '', fieldKey, label }) {
     </a>
   )
 }
+
+
+

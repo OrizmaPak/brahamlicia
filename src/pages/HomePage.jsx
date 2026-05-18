@@ -4,7 +4,8 @@ import { SiteLayout } from '../components/SiteLayout.jsx'
 import { EditableImage } from '../components/editor/EditableImage.jsx'
 import { EditableLink } from '../components/editor/EditableLink.jsx'
 import { EditableText } from '../components/editor/EditableText.jsx'
-import { HomeContentProvider, useHomeContent } from '../context/HomeContentContext.jsx'
+import { PageContentProvider, usePageContent } from '../context/PageContentContext.jsx'
+import { createHomeFallbackFields } from '../content/homeContentFields.js'
 import { getLinkField } from '../content/homeContentFields.js'
 import {
   audiences,
@@ -27,7 +28,7 @@ function Heading({ descriptionKey, eyebrowKey, titleKey }) {
 }
 
 function HomePageContent({ pageId }) {
-  const { fields, isLoading } = useHomeContent()
+  const { fields, isLoading } = usePageContent()
   const [activeHeroMoment, setActiveHeroMoment] = useState(0)
   const [activeFaqIndex, setActiveFaqIndex] = useState(0)
 
@@ -397,8 +398,8 @@ function HomePageContent({ pageId }) {
 
 export function HomePage({ pageId }) {
   return (
-    <HomeContentProvider>
+    <PageContentProvider createFallbackFields={createHomeFallbackFields} pageId="home">
       <HomePageContent pageId={pageId} />
-    </HomeContentProvider>
+    </PageContentProvider>
   )
 }

@@ -1,20 +1,20 @@
-/* eslint-disable react-refresh/only-export-components */
+﻿/* eslint-disable react-refresh/only-export-components */
 import React, { createContext, useContext, useEffect, useMemo, useState } from 'react'
-import { createHomeFallbackFields } from '../content/homeContentFields.js'
 import { isFirebaseConfigured } from '../lib/firebase.js'
-import { subscribeHomeContent } from '../lib/homeContentRepository.js'
+import { subscribePageContent } from '../lib/homeContentRepository.js'
 
-const HomeContentContext = createContext(null)
+const PageContentContext = createContext(null)
 
-export function HomeContentProvider({ children }) {
-  const [fallbackFields] = useState(() => createHomeFallbackFields())
+export function PageContentProvider({ children, createFallbackFields, pageId }) {
+  const [fallbackFields] = useState(() => createFallbackFields())
   const [remoteFields, setRemoteFields] = useState({})
   const [source, setSource] = useState('fallback')
   const [isLoading, setIsLoading] = useState(() => isFirebaseConfigured)
   const [error, setError] = useState('')
 
   useEffect(() => {
-    const unsubscribe = subscribeHomeContent(
+    const unsubscribe = subscribePageContent(
+      pageId,
       ({ fields, source: nextSource }) => {
         setRemoteFields(fields ?? {})
         setSource(nextSource)
@@ -27,7 +27,7 @@ export function HomeContentProvider({ children }) {
     )
 
     return unsubscribe
-  }, [])
+  }, [pageId])
 
   const fields = useMemo(
     () => ({
@@ -43,24 +43,24 @@ export function HomeContentProvider({ children }) {
       fallbackFields,
       fields,
       isLoading,
+      pageId,
       source,
     }),
-    [error, fallbackFields, fields, isLoading, source],
+    [error, fallbackFields, fields, isLoading, pageId, source],
   )
 
-  return <HomeContentContext.Provider value={value}>{children}</HomeContentContext.Provider>
+  return <PageContentContext.Provider value={value}>{children}</PageContentContext.Provider>
 }
 
-export function useHomeContent() {
-  const context = useContext(HomeContentContext)
+export function usePageContent() {
+  const context = useContext(PageContentContext)
   if (!context) {
-    throw new Error('useHomeContent must be used inside HomeContentProvider.')
+    throw new Error('usePageContent must be used inside PageContentProvider.')
   }
   return context
 }
 
-export function useHomeField(fieldKey) {
-  const { fields } = useHomeContent()
+export function usePageField(fieldKey) {
+  const { fields } = usePageContent()
   return fields[fieldKey]
 }
-

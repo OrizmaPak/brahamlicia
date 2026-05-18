@@ -29,13 +29,13 @@ service cloud.firestore {
     }
 
     match /sitePages/{pageId} {
-      allow read: if pageId == 'home';
-      allow create, update: if isAdmin() && pageId == 'home';
+      allow read: if pageId in ['home', 'about'];
+      allow create, update: if isAdmin() && pageId in ['home', 'about'];
       allow delete: if false;
     }
 
     match /sitePageRevisions/{pageId}/items/{revisionId} {
-      allow read, create: if isAdmin() && pageId == 'home';
+      allow read, create: if isAdmin() && pageId in ['home', 'about'];
       allow update, delete: if false;
     }
 

@@ -1,7 +1,7 @@
 /* eslint-disable react-refresh/only-export-components */
 import React, { createContext, useCallback, useContext, useMemo, useState } from 'react'
 import { uploadImageToCloudinary } from '../lib/cloudinary.js'
-import { saveHomeField } from '../lib/homeContentRepository.js'
+import { savePageField } from '../lib/homeContentRepository.js'
 
 const InlineEditorContext = createContext({
   closeEditor: () => {},
@@ -14,11 +14,13 @@ export function useInlineEditor() {
   return useContext(InlineEditorContext)
 }
 
-function EditorToolbar({ onExit, saveStatus }) {
+function EditorToolbar({ onExit, pageId, saveStatus }) {
+  const pageLabel = pageId === 'about' ? 'About Page' : 'Home Page'
+
   return (
     <div className="editor-toolbar" role="status">
       <div>
-        <span>Home Page</span>
+        <span>{pageLabel}</span>
         <strong>Inline edit mode</strong>
       </div>
       <p>{saveStatus === 'saving' ? 'Saving live change...' : saveStatus === 'saved' ? 'Saved' : 'Click any outlined text, link, or image to edit.'}</p>
@@ -52,7 +54,7 @@ function ConfirmSaveDialog({ fieldLabel, isSaving, onCancel, onConfirm }) {
   )
 }
 
-function InlineFieldDialog({ activeEdit, closeEditor, stageSave }) {
+function InlineFieldDialog({ activeEdit, closeEditor, pageId, stageSave }) {
   const [draftText, setDraftText] = useState('')
   const [draftLabel, setDraftLabel] = useState('')
   const [draftHref, setDraftHref] = useState('')
@@ -83,7 +85,7 @@ function InlineFieldDialog({ activeEdit, closeEditor, stageSave }) {
     setUploadMessage('Uploading image...')
 
     try {
-      const result = await uploadImageToCloudinary(file)
+      const result = await uploadImageToCloudinary(file, `brahamlicia/${pageId}`)
       setDraftSrc(result.secureUrl)
       setUploadMessage('Upload complete. Click Done to save it live.')
     } catch (error) {
@@ -173,7 +175,7 @@ function InlineFieldDialog({ activeEdit, closeEditor, stageSave }) {
   )
 }
 
-export function InlineEditorProvider({ children, onExit, user }) {
+export function InlineEditorProvider({ children, onExit, pageId = 'home', user }) {
   const [activeEdit, setActiveEdit] = useState(null)
   const [pendingSave, setPendingSave] = useState(null)
   const [saveStatus, setSaveStatus] = useState('idle')
@@ -205,7 +207,7 @@ export function InlineEditorProvider({ children, onExit, user }) {
     setSaveError('')
 
     try {
-      await saveHomeField(pendingSave.fieldKey, pendingSave.fieldValue, user)
+      await savePageField(pageId, pendingSave.fieldKey, pendingSave.fieldValue, user)
       setPendingSave(null)
       setSaveStatus('saved')
       window.setTimeout(() => setSaveStatus('idle'), 1800)
@@ -213,7 +215,7 @@ export function InlineEditorProvider({ children, onExit, user }) {
       setSaveError(error.message)
       setSaveStatus('idle')
     }
-  }, [pendingSave, user])
+  }, [pageId, pendingSave, user])
 
   const handleClickCapture = useCallback((event) => {
     const target = event.target instanceof Element ? event.target : null
@@ -237,11 +239,11 @@ export function InlineEditorProvider({ children, onExit, user }) {
   return (
     <InlineEditorContext.Provider value={value}>
       <div className="editor-mode-shell" onClickCapture={handleClickCapture}>
-        <EditorToolbar onExit={onExit} saveStatus={saveStatus} />
+        <EditorToolbar onExit={onExit} pageId={pageId} saveStatus={saveStatus} />
         {saveError ? <div className="editor-error">{saveError}</div> : null}
         {children}
       </div>
-      <InlineFieldDialog activeEdit={activeEdit} closeEditor={closeEditor} stageSave={stageSave} />
+      <InlineFieldDialog activeEdit={activeEdit} closeEditor={closeEditor} pageId={pageId} stageSave={stageSave} />
       {pendingSave ? (
         <ConfirmSaveDialog
           fieldLabel={pendingSave.fieldLabel}

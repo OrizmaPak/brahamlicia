@@ -1,9 +1,9 @@
-import React from 'react'
-import { useHomeField } from '../../context/HomeContentContext.jsx'
+﻿import React from 'react'
+import { usePageField } from '../../context/PageContentContext.jsx'
 import { useInlineEditor } from '../../context/InlineEditorContext.jsx'
 
 export function EditableImage({ className = '', fieldKey, label, loading }) {
-  const field = useHomeField(fieldKey)
+  const field = usePageField(fieldKey)
   const { isEditing, openEditor } = useInlineEditor()
   const alt = field?.alt ?? ''
   const src = field?.src ?? ''
@@ -35,3 +35,6 @@ export function EditableImage({ className = '', fieldKey, label, loading }) {
     />
   )
 }
+
+
+

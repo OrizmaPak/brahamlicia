@@ -1,16 +1,17 @@
-import React, { useEffect, useMemo, useState } from 'react'
+﻿import React, { useEffect, useMemo, useState } from 'react'
 import {
   GoogleAuthProvider,
   onAuthStateChanged,
   signInWithPopup,
   signOut,
 } from 'firebase/auth'
+import { AboutPage } from './AboutPage.jsx'
 import { HomePage } from './HomePage.jsx'
 import { createHomeFallbackFields } from '../content/homeContentFields.js'
 import { InlineEditorProvider } from '../context/InlineEditorContext.jsx'
 import { allowedAdminEmails, isAllowedAdminEmail } from '../lib/adminAccess.js'
 import { auth, isFirebaseConfigured } from '../lib/firebase.js'
-import { seedHomeContent, subscribeEnquiries } from '../lib/homeContentRepository.js'
+import { seedPageContent, subscribeEnquiries } from '../lib/homeContentRepository.js'
 
 function AdminFrame({ children }) {
   return (
@@ -42,7 +43,7 @@ function LoginPanel({ error, onLogin }) {
   return (
     <AdminFrame>
       <span className="admin-kicker">Restricted access</span>
-      <h1>Sign in with Google to manage enquiries and edit the Home page.</h1>
+      <h1>Sign in with Google to manage enquiries and edit site pages.</h1>
       <p>Allowed accounts: {allowedAdminEmails.join(', ')}.</p>
       {error ? <div className="admin-alert">{error}</div> : null}
       <button className="button button--primary" onClick={onLogin} type="button">
@@ -124,7 +125,7 @@ function Dashboard({ onLogout, user }) {
     setSeedStatus('Resetting all Home page content to the original values...')
 
     try {
-      await seedHomeContent(fallbackFields, user)
+      await seedPageContent('home', fallbackFields, user)
       setSeedStatus('Home fallback content has been written to Firestore.')
     } catch (error) {
       setSeedStatus(error.message)
@@ -139,7 +140,7 @@ function Dashboard({ onLogout, user }) {
       <header className="admin-dashboard__header">
         <div>
           <span className="admin-kicker">Dashboard</span>
-          <h1>Manage enquiries and launch Home page editing.</h1>
+          <h1>Manage enquiries and launch page editing.</h1>
           <p>{user.email}</p>
         </div>
         <button className="button button--secondary" onClick={onLogout} type="button">
@@ -152,6 +153,11 @@ function Dashboard({ onLogout, user }) {
           <span>Inline CMS</span>
           <h2>Edit Home Page</h2>
           <p>Open the real Home page, click any outlined text, link, or image, then save live with a revision backup.</p>
+        </a>
+        <a className="admin-card admin-card--action" href="/admin/?edit=about">
+          <span>Inline CMS</span>
+          <h2>Edit About Page</h2>
+          <p>Open the About page in edit mode and update all headline copy, cards, links, and images directly.</p>
         </a>
         <button
           className="admin-card admin-card--action admin-card--button"
@@ -205,7 +211,8 @@ export function AdminPage() {
   const [authUser, setAuthUser] = useState(null)
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(() => Boolean(auth))
-  const isEditHome = new URLSearchParams(window.location.search).get('edit') === 'home'
+  const editPageId = new URLSearchParams(window.location.search).get('edit')
+  const isEditMode = editPageId === 'home' || editPageId === 'about'
 
   useEffect(() => {
     if (!auth) {
@@ -261,10 +268,10 @@ export function AdminPage() {
 
   if (!authUser) return <LoginPanel error={error} onLogin={handleLogin} />
 
-  if (isEditHome) {
+  if (isEditMode) {
     return (
-      <InlineEditorProvider onExit={() => window.location.assign('/admin/')} user={authUser}>
-        <HomePage pageId="home" />
+      <InlineEditorProvider onExit={() => window.location.assign('/admin/')} pageId={editPageId} user={authUser}>
+        {editPageId === 'about' ? <AboutPage pageId="about" /> : <HomePage pageId="home" />}
       </InlineEditorProvider>
     )
   }
