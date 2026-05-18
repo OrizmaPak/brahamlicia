@@ -7,10 +7,12 @@ import {
 } from 'firebase/auth'
 import { AboutPage } from './AboutPage.jsx'
 import { ContactPage } from './ContactPage.jsx'
+import { FooterEditorPage } from './FooterEditorPage.jsx'
 import { HomePage } from './HomePage.jsx'
 import { ServicesPage } from './ServicesPage.jsx'
 import { createAboutFallbackFields } from '../content/aboutContentFields.js'
 import { createContactFallbackFields } from '../content/contactContentFields.js'
+import { createFooterFallbackFields } from '../content/footerContentFields.js'
 import { createHomeFallbackFields } from '../content/homeContentFields.js'
 import { createServicesFallbackFields } from '../content/servicesContentFields.js'
 import { InlineEditorProvider } from '../context/InlineEditorContext.jsx'
@@ -145,6 +147,16 @@ function PageControlPanel({ description, editHref, index, onReset, resetLabel, t
   )
 }
 
+const editablePageIds = ['home', 'about', 'services', 'contact', 'footer']
+
+const pageLabels = {
+  about: 'About',
+  contact: 'Contact',
+  footer: 'Footer',
+  home: 'Home',
+  services: 'Services',
+}
+
 function Dashboard({ onLogout, user }) {
   const [seedStatus, setSeedStatus] = useState('')
   const [isSeeding, setIsSeeding] = useState(false)
@@ -153,30 +165,24 @@ function Dashboard({ onLogout, user }) {
   const aboutFallbackFields = useMemo(() => createAboutFallbackFields(), [])
   const servicesFallbackFields = useMemo(() => createServicesFallbackFields(), [])
   const contactFallbackFields = useMemo(() => createContactFallbackFields(), [])
+  const footerFallbackFields = useMemo(() => createFooterFallbackFields(), [])
 
   async function handleResetPage() {
     if (!resetTargetPage) return
 
     setIsSeeding(true)
-    const pageLabel =
-      resetTargetPage === 'about'
-        ? 'About'
-        : resetTargetPage === 'services'
-          ? 'Services'
-          : resetTargetPage === 'contact'
-            ? 'Contact'
-          : 'Home'
-    setSeedStatus(`Resetting all ${pageLabel} page content to the original values...`)
+    const pageLabel = pageLabels[resetTargetPage] ?? 'Home'
+    setSeedStatus(`Resetting all ${pageLabel} content to the original values...`)
 
     try {
-      const fields =
-        resetTargetPage === 'about'
-          ? aboutFallbackFields
-          : resetTargetPage === 'services'
-            ? servicesFallbackFields
-            : resetTargetPage === 'contact'
-              ? contactFallbackFields
-            : homeFallbackFields
+      const fallbackFieldsByPage = {
+        about: aboutFallbackFields,
+        contact: contactFallbackFields,
+        footer: footerFallbackFields,
+        home: homeFallbackFields,
+        services: servicesFallbackFields,
+      }
+      const fields = fallbackFieldsByPage[resetTargetPage] ?? homeFallbackFields
       await seedPageContent(resetTargetPage, fields, user)
       setSeedStatus(`${pageLabel} fallback content has been written to Firestore.`)
     } catch (error) {
@@ -206,8 +212,8 @@ function Dashboard({ onLogout, user }) {
 
       <section className="admin-status-strip" aria-label="Dashboard status">
         <div>
-          <span>Editable pages</span>
-          <strong>4</strong>
+          <span>Editable areas</span>
+          <strong>5</strong>
         </div>
         <div>
           <span>Editor mode</span>
@@ -264,6 +270,14 @@ function Dashboard({ onLogout, user }) {
             resetLabel="Reset Contact Page"
             title="Contact Page"
           />
+          <PageControlPanel
+            description="Update the global footer brand copy, navigation links, contact details, and bottom notes."
+            editHref="/admin/?edit=footer"
+            index={5}
+            onReset={() => setResetTargetPage('footer')}
+            resetLabel="Reset Footer"
+            title="Global Footer"
+          />
         </div>
       </section>
 
@@ -272,19 +286,13 @@ function Dashboard({ onLogout, user }) {
         <div aria-modal="true" className="editor-modal" role="dialog">
           <div className="editor-modal__panel admin-seed-modal">
             <span className="editor-modal__eyebrow">
-              {resetTargetPage === 'about'
-                ? 'Reset About Content'
-                : resetTargetPage === 'services'
-                  ? 'Reset Services Content'
-                  : resetTargetPage === 'contact'
-                    ? 'Reset Contact Content'
-                  : 'Reset Home Content'}
+              Reset {pageLabels[resetTargetPage] ?? 'Home'} Content
             </span>
             <h2>
-              Reset all {resetTargetPage === 'about' ? 'About' : resetTargetPage === 'services' ? 'Services' : resetTargetPage === 'contact' ? 'Contact' : 'Home'} page data to the original content?
+              Reset all {pageLabels[resetTargetPage] ?? 'Home'} data to the original content?
             </h2>
             <p>
-              This will overwrite the current {resetTargetPage === 'about' ? 'About' : resetTargetPage === 'services' ? 'Services' : resetTargetPage === 'contact' ? 'Contact' : 'Home'} page
+              This will overwrite the current {pageLabels[resetTargetPage] ?? 'Home'}
               values in `sitePages/{resetTargetPage}` with the baseline hardcoded content.
             </p>
             {isSeeding ? (
@@ -319,7 +327,7 @@ export function AdminPage() {
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(() => Boolean(auth))
   const editPageId = new URLSearchParams(window.location.search).get('edit')
-  const isEditMode = editPageId === 'home' || editPageId === 'about' || editPageId === 'services' || editPageId === 'contact'
+  const isEditMode = editablePageIds.includes(editPageId)
 
   useEffect(() => {
     if (!auth) {
@@ -384,6 +392,8 @@ export function AdminPage() {
           <ServicesPage pageId="services" />
         ) : editPageId === 'contact' ? (
           <ContactPage pageId="contact" />
+        ) : editPageId === 'footer' ? (
+          <FooterEditorPage />
         ) : (
           <HomePage pageId="home" />
         )}

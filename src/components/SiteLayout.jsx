@@ -1,5 +1,8 @@
 import React from 'react'
 import { useEffect, useState } from 'react'
+import { EditableLink } from './editor/EditableLink.jsx'
+import { EditableText } from './editor/EditableText.jsx'
+import { createFooterFallbackFields } from '../content/footerContentFields.js'
 import {
   aboutMenuItems,
   footerLinks,
@@ -7,6 +10,7 @@ import {
   servicesMenuItems,
   siteConfig,
 } from '../content/siteContent.js'
+import { PageContentProvider } from '../context/PageContentContext.jsx'
 
 const brandLogo = '/braham-logo-new.png'
 
@@ -56,6 +60,58 @@ function MobileGroup({ id, isOpen, items, label, onToggle }) {
         ))}
       </div>
     </div>
+  )
+}
+
+function FooterContent() {
+  return (
+    <footer className="site-footer">
+      <div className="container site-footer__grid">
+        <div className="footer-brand">
+          <div className="footer-brand__lockup">
+            <BrandMark />
+            <div>
+              <EditableText as="strong" fieldKey="brand.name" label="Footer brand name" pageId="footer" />
+              <EditableText as="p" fieldKey="brand.tagline" label="Footer brand tagline" multiline pageId="footer" />
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <EditableText as="p" className="footer-heading" fieldKey="explore.heading" label="Footer explore heading" pageId="footer" />
+          <div className="footer-links">
+            {footerLinks.map((item, index) => (
+              <EditableLink fieldKey={`explore.links.${index}`} key={item.href} label={`Footer explore link ${index + 1}`} pageId="footer" />
+            ))}
+          </div>
+        </div>
+
+        <div>
+          <EditableText as="p" className="footer-heading" fieldKey="contact.heading" label="Footer contact heading" pageId="footer" />
+          <div className="footer-links footer-links--contact">
+            <EditableLink fieldKey="contact.email.primary" label="Footer primary email" pageId="footer" />
+            <EditableLink fieldKey="contact.email.secondary" label="Footer secondary email" pageId="footer" />
+            <EditableLink fieldKey="contact.phone.primary" label="Footer primary phone" pageId="footer" />
+            <EditableLink fieldKey="contact.phone.secondary" label="Footer secondary phone" pageId="footer" />
+            <EditableText as="span" fieldKey="contact.location" label="Footer location" multiline pageId="footer" />
+            <EditableText as="span" fieldKey="contact.hours" label="Footer business hours" multiline pageId="footer" />
+          </div>
+        </div>
+      </div>
+
+      <div className="container site-footer__bottom">
+        <EditableText as="span" fieldKey="bottom.copyright" label="Footer copyright" pageId="footer" />
+        <EditableText as="span" fieldKey="bottom.note" label="Footer bottom note" pageId="footer" />
+      </div>
+    </footer>
+  )
+}
+
+export function SiteFooter() {
+  return (
+    <PageContentProvider createFallbackFields={createFooterFallbackFields} pageId="footer">
+      <FooterContent />
+    </PageContentProvider>
   )
 }
 
@@ -208,47 +264,7 @@ export function SiteLayout({ children, pageId }) {
 
       <main>{children}</main>
 
-      <footer className="site-footer">
-        <div className="container site-footer__grid">
-          <div className="footer-brand">
-            <div className="footer-brand__lockup">
-              <BrandMark />
-              <div>
-                <strong>{siteConfig.name}</strong>
-                <p>{siteConfig.tagline}</p>
-              </div>
-            </div>
-          </div>
-
-          <div>
-            <p className="footer-heading">Explore</p>
-            <div className="footer-links">
-              {footerLinks.map((item) => (
-                <a href={item.href} key={item.href}>
-                  {item.label}
-                </a>
-              ))}
-            </div>
-          </div>
-
-          <div>
-            <p className="footer-heading">Contact</p>
-            <div className="footer-links footer-links--contact">
-              <a href={`mailto:${siteConfig.primaryEmail}`}>{siteConfig.primaryEmail}</a>
-              <a href={`mailto:${siteConfig.secondaryEmail}`}>{siteConfig.secondaryEmail}</a>
-              <a href="tel:+2348143701179">{siteConfig.primaryPhone}</a>
-              <a href="tel:+2348143866334">{siteConfig.secondaryPhone}</a>
-              <span>{siteConfig.location}</span>
-              <span>{siteConfig.hours}</span>
-            </div>
-          </div>
-        </div>
-
-        <div className="container site-footer__bottom">
-          <span>Copyright Braham Licia Consulting. All rights reserved.</span>
-          <span>Built for clarity, growth, and practical direction.</span>
-        </div>
-      </footer>
+      <SiteFooter />
     </div>
   )
 }

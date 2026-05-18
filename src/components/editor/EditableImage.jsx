@@ -2,7 +2,7 @@
 import { usePageField } from '../../context/PageContentContext.jsx'
 import { useInlineEditor } from '../../context/InlineEditorContext.jsx'
 
-export function EditableImage({ className = '', fieldKey, label, loading }) {
+export function EditableImage({ className = '', fieldKey, label, loading, pageId }) {
   const field = usePageField(fieldKey)
   const { isEditing, openEditor } = useInlineEditor()
   const alt = field?.alt ?? ''
@@ -18,6 +18,7 @@ export function EditableImage({ className = '', fieldKey, label, loading }) {
       field,
       fieldKey,
       label: label ?? fieldKey,
+      pageId,
       type: 'image',
     })
   }

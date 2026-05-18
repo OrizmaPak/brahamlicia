@@ -2,7 +2,7 @@
 import { usePageField } from '../../context/PageContentContext.jsx'
 import { useInlineEditor } from '../../context/InlineEditorContext.jsx'
 
-export function EditableLink({ className = '', fieldKey, label }) {
+export function EditableLink({ className = '', fieldKey, label, pageId }) {
   const field = usePageField(fieldKey)
   const { isEditing, openEditor } = useInlineEditor()
   const linkLabel = field?.label ?? ''
@@ -13,7 +13,7 @@ export function EditableLink({ className = '', fieldKey, label }) {
 
     event.preventDefault()
     event.stopPropagation()
-    openEditor({ field, fieldKey, label: label ?? fieldKey, type: 'link' })
+    openEditor({ field, fieldKey, label: label ?? fieldKey, pageId, type: 'link' })
   }
 
   return (

@@ -2,7 +2,7 @@
 import { usePageField } from '../../context/PageContentContext.jsx'
 import { useInlineEditor } from '../../context/InlineEditorContext.jsx'
 
-export function EditableText({ as = 'span', className = '', fieldKey, label, multiline = false }) {
+export function EditableText({ as = 'span', className = '', fieldKey, label, multiline = false, pageId }) {
   const field = usePageField(fieldKey)
   const { isEditing, openEditor } = useInlineEditor()
   const value = field?.value ?? ''
@@ -14,7 +14,7 @@ export function EditableText({ as = 'span', className = '', fieldKey, label, mul
   function handleEdit(event) {
     event.preventDefault()
     event.stopPropagation()
-    openEditor({ field, fieldKey, label: label ?? fieldKey, multiline, type: 'text' })
+    openEditor({ field, fieldKey, label: label ?? fieldKey, multiline, pageId, type: 'text' })
   }
 
   function handleKeyDown(event) {

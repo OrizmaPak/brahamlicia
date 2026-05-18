@@ -15,7 +15,14 @@ export function useInlineEditor() {
 }
 
 function EditorToolbar({ onExit, pageId, saveStatus }) {
-  const pageLabel = pageId === 'about' ? 'About Page' : 'Home Page'
+  const pageLabels = {
+    about: 'About Page',
+    contact: 'Contact Page',
+    footer: 'Global Footer',
+    home: 'Home Page',
+    services: 'Services Page',
+  }
+  const pageLabel = pageLabels[pageId] ?? 'Inline Editor'
 
   return (
     <div className="editor-toolbar" role="status">
@@ -99,7 +106,8 @@ function InlineFieldDialog({ activeEdit, closeEditor, pageId, stageSave }) {
     setUploadMessage('Uploading image...')
 
     try {
-      const result = await uploadImageToCloudinary(file, `brahamlicia/${pageId}`)
+      const uploadPageId = activeEdit.pageId ?? pageId
+      const result = await uploadImageToCloudinary(file, `brahamlicia/${uploadPageId}`)
       setDraftSrc(result.secureUrl)
       setUploadMessage('Upload complete. Click Done to save it live.')
     } catch (error) {
@@ -214,10 +222,11 @@ export function InlineEditorProvider({ children, onExit, pageId = 'home', user }
         fieldKey: activeEdit.fieldKey,
         fieldLabel: activeEdit.label,
         fieldValue,
+        pageId: activeEdit.pageId ?? pageId,
       })
       setActiveEdit(null)
     },
-    [activeEdit],
+    [activeEdit, pageId],
   )
 
   const confirmSave = useCallback(async () => {
@@ -227,7 +236,7 @@ export function InlineEditorProvider({ children, onExit, pageId = 'home', user }
     setSaveError('')
 
     try {
-      await savePageField(pageId, pendingSave.fieldKey, pendingSave.fieldValue, user)
+      await savePageField(pendingSave.pageId, pendingSave.fieldKey, pendingSave.fieldValue, user)
       setPendingSave(null)
       setSaveStatus('saved')
       window.setTimeout(() => setSaveStatus('idle'), 1800)
@@ -235,7 +244,7 @@ export function InlineEditorProvider({ children, onExit, pageId = 'home', user }
       setSaveError(error.message)
       setSaveStatus('idle')
     }
-  }, [pageId, pendingSave, user])
+  }, [pendingSave, user])
 
   const handleClickCapture = useCallback((event) => {
     const target = event.target instanceof Element ? event.target : null
