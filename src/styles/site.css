@@ -5781,6 +5781,66 @@ section[id] {
   color: inherit;
 }
 
+.admin-page-box {
+  padding: 0;
+  overflow: hidden;
+}
+
+.admin-page-box__summary {
+  list-style: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.35rem;
+}
+
+.admin-page-box__summary::-webkit-details-marker {
+  display: none;
+}
+
+.admin-page-box__summary h2 {
+  margin-top: 0.35rem;
+}
+
+.admin-page-box__summary p {
+  margin-top: 0.45rem;
+}
+
+.admin-page-box__toggle {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 999px;
+  border: 1px solid rgba(22, 49, 95, 0.22);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(22, 49, 95, 0.06);
+  transition: transform 0.2s ease;
+}
+
+.admin-page-box__toggle::before {
+  content: '';
+  width: 0.5rem;
+  height: 0.5rem;
+  border-right: 2px solid rgba(22, 49, 95, 0.8);
+  border-bottom: 2px solid rgba(22, 49, 95, 0.8);
+  transform: rotate(45deg) translateY(-1px);
+}
+
+.admin-page-box[open] .admin-page-box__toggle {
+  transform: rotate(180deg);
+}
+
+.admin-page-box__actions {
+  padding: 0 1.35rem 1.35rem;
+  border-top: 1px solid rgba(212, 220, 237, 0.8);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.7rem;
+}
+
 .admin-card__head {
   display: flex;
   justify-content: space-between;

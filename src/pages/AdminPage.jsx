@@ -149,25 +149,40 @@ function Dashboard({ onLogout, user }) {
       </header>
 
       <div className="admin-action-grid">
-        <a className="admin-card admin-card--action" href="/admin/?edit=home">
-          <span>Inline CMS</span>
-          <h2>Edit Home Page</h2>
-          <p>Open the real Home page, click any outlined text, link, or image, then save live with a revision backup.</p>
-        </a>
-        <a className="admin-card admin-card--action" href="/admin/?edit=about">
-          <span>Inline CMS</span>
-          <h2>Edit About Page</h2>
-          <p>Open the About page in edit mode and update all headline copy, cards, links, and images directly.</p>
-        </a>
-        <button
-          className="admin-card admin-card--action admin-card--button"
-          onClick={() => setIsSeedModalOpen(true)}
-          type="button"
-        >
-          <span>Initial content</span>
-          <h2>Seed Home Fallback</h2>
-          <p>Copy the current hardcoded Home content into `sitePages/home` so every field is ready for inline editing.</p>
-        </button>
+        <details className="admin-card admin-page-box" open>
+          <summary className="admin-page-box__summary">
+            <div>
+              <span>Home page controls</span>
+              <h2>Home Page</h2>
+              <p>Edit the Home page or reset it back to the original baseline content.</p>
+            </div>
+            <span className="admin-page-box__toggle" aria-hidden="true" />
+          </summary>
+          <div className="admin-page-box__actions">
+            <a className="button button--primary" href="/admin/?edit=home">
+              Edit Home Page
+            </a>
+            <button className="button button--secondary" onClick={() => setIsSeedModalOpen(true)} type="button">
+              Reset Home Page
+            </button>
+          </div>
+        </details>
+
+        <details className="admin-card admin-page-box" open>
+          <summary className="admin-page-box__summary">
+            <div>
+              <span>About page controls</span>
+              <h2>About Page</h2>
+              <p>Open the About page in inline mode to update copy, cards, links, and images.</p>
+            </div>
+            <span className="admin-page-box__toggle" aria-hidden="true" />
+          </summary>
+          <div className="admin-page-box__actions">
+            <a className="button button--primary" href="/admin/?edit=about">
+              Edit About Page
+            </a>
+          </div>
+        </details>
       </div>
 
       {seedStatus ? <div className="admin-status">{seedStatus}</div> : null}
