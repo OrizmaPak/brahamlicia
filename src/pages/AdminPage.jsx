@@ -128,7 +128,6 @@ function PageControlPanel({ description, editHref, index, onReset, resetLabel, t
         <div className="admin-page-box__identity">
           <span className="admin-page-box__index">{String(index).padStart(2, '0')}</span>
           <div>
-            <span>Page controls</span>
             <h2>{title}</h2>
             <p>{description}</p>
           </div>
@@ -198,8 +197,8 @@ function Dashboard({ onLogout, user }) {
       <header className="admin-dashboard__header">
         <div className="admin-console-copy">
           <span className="admin-kicker">Dashboard</span>
-          <h1>Content Control Center</h1>
-          <p>Manage page editing, baseline resets, and enquiry review from one operational console.</p>
+          <h1>Content Manager</h1>
+          <p>Edit pages, reset fallback content, and review enquiries.</p>
         </div>
         <div className="admin-session-card">
           <span>Authorized session</span>
@@ -210,36 +209,17 @@ function Dashboard({ onLogout, user }) {
         </div>
       </header>
 
-      <section className="admin-status-strip" aria-label="Dashboard status">
-        <div>
-          <span>Editable areas</span>
-          <strong>5</strong>
-        </div>
-        <div>
-          <span>Editor mode</span>
-          <strong>Inline</strong>
-        </div>
-        <div>
-          <span>Revisions</span>
-          <strong>On save</strong>
-        </div>
-        <div>
-          <span>Content source</span>
-          <strong>Firestore</strong>
-        </div>
-      </section>
-
       <section className="admin-workspace">
         <div className="admin-workspace__head">
           <div>
             <span className="admin-kicker">Pages</span>
-            <h2>Site editing controls</h2>
+            <h2>Choose what to edit</h2>
           </div>
-          <p>Edit pages directly on the live interface or reset a page to its original baseline content.</p>
+          <p>Open inline editor or reset a page to baseline.</p>
         </div>
         <div className="admin-action-grid">
           <PageControlPanel
-            description="Edit the Home page or reset it back to the original baseline content."
+            description="Hero, sections, links, images."
             editHref="/admin/?edit=home"
             index={1}
             onReset={() => setResetTargetPage('home')}
@@ -247,7 +227,7 @@ function Dashboard({ onLogout, user }) {
             title="Home Page"
           />
           <PageControlPanel
-            description="Update the About page copy, cards, links, and images directly."
+            description="Story, values, audience, insights."
             editHref="/admin/?edit=about"
             index={2}
             onReset={() => setResetTargetPage('about')}
@@ -255,7 +235,7 @@ function Dashboard({ onLogout, user }) {
             title="About Page"
           />
           <PageControlPanel
-            description="Update service cards, accordion details, images, and CTAs."
+            description="Cards, details, process, calls to action."
             editHref="/admin/?edit=services"
             index={3}
             onReset={() => setResetTargetPage('services')}
@@ -263,7 +243,7 @@ function Dashboard({ onLogout, user }) {
             title="Services Page"
           />
           <PageControlPanel
-            description="Edit hero copy, contact details, imagery, and CTA content."
+            description="Hero, contact details, sidebar, CTA."
             editHref="/admin/?edit=contact"
             index={4}
             onReset={() => setResetTargetPage('contact')}
@@ -271,7 +251,7 @@ function Dashboard({ onLogout, user }) {
             title="Contact Page"
           />
           <PageControlPanel
-            description="Update the global footer brand copy, navigation links, contact details, and bottom notes."
+            description="Brand, quick links, contact, footer notes."
             editHref="/admin/?edit=footer"
             index={5}
             onReset={() => setResetTargetPage('footer')}
