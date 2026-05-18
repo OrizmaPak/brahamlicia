@@ -11,6 +11,7 @@ export default defineConfig({
   build: {
     rollupOptions: {
       input: {
+        admin: resolve(__dirname, 'admin/index.html'),
         home: resolve(__dirname, 'index.html'),
         about: resolve(__dirname, 'about/index.html'),
         services: resolve(__dirname, 'services/index.html'),

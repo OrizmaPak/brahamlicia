@@ -1,0 +1,75 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isAllowedEmail() {
+      return signedIn()
+        && request.auth.token.email in [
+          'orevaorior@gmail.com',
+          'jovisamblue@gmail.com'
+        ];
+    }
+
+    function hasAdminRecord() {
+      return signedIn()
+        && exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+    }
+
+    function isAdmin() {
+      return isAllowedEmail() || hasAdminRecord();
+    }
+
+    function isShortString(fieldName, maxLength) {
+      return request.resource.data[fieldName] is string
+        && request.resource.data[fieldName].size() <= maxLength;
+    }
+
+    match /sitePages/{pageId} {
+      allow read: if pageId == 'home';
+      allow create, update: if isAdmin() && pageId == 'home';
+      allow delete: if false;
+    }
+
+    match /sitePageRevisions/{pageId}/items/{revisionId} {
+      allow read, create: if isAdmin() && pageId == 'home';
+      allow update, delete: if false;
+    }
+
+    match /mediaAssets/{assetId} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /enquiries/{enquiryId} {
+      allow create: if request.resource.data.keys().hasOnly([
+          'name',
+          'organisation',
+          'email',
+          'phone',
+          'service',
+          'nextStep',
+          'description',
+          'source',
+          'status',
+          'createdAt'
+        ])
+        && isShortString('name', 140)
+        && isShortString('email', 180)
+        && isShortString('description', 3000);
+      allow read, update, delete: if isAdmin();
+    }
+
+    match /admins/{uid} {
+      allow read: if signedIn() && (request.auth.uid == uid || isAdmin());
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

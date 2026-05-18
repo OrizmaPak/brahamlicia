@@ -1,6 +1,8 @@
 import React from 'react'
 import { useState } from 'react'
 import { siteConfig } from '../content/siteContent.js'
+import { isFirebaseConfigured } from '../lib/firebase.js'
+import { submitEnquiry } from '../lib/homeContentRepository.js'
 
 const initialState = {
   description: '',
@@ -14,7 +16,7 @@ const initialState = {
 
 export function ContactForm() {
   const [formData, setFormData] = useState(initialState)
-  const [isReady, setIsReady] = useState(false)
+  const [formStatus, setFormStatus] = useState('idle')
 
   function handleChange(event) {
     const { name, value } = event.target
@@ -24,9 +26,7 @@ export function ContactForm() {
     }))
   }
 
-  function handleSubmit(event) {
-    event.preventDefault()
-
+  function openMailFallback() {
     const subject = `${siteConfig.name} enquiry from ${formData.name || 'Website visitor'}`
     const body = [
       `Full Name: ${formData.name}`,
@@ -41,7 +41,26 @@ export function ContactForm() {
     ].join('\n')
 
     window.location.href = `mailto:${siteConfig.primaryEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
-    setIsReady(true)
+  }
+
+  async function handleSubmit(event) {
+    event.preventDefault()
+    setFormStatus('sending')
+
+    if (!isFirebaseConfigured) {
+      openMailFallback()
+      setFormStatus('mailto')
+      return
+    }
+
+    try {
+      await submitEnquiry(formData)
+      setFormData(initialState)
+      setFormStatus('sent')
+    } catch {
+      openMailFallback()
+      setFormStatus('mailto')
+    }
   }
 
   return (
@@ -92,12 +111,14 @@ export function ContactForm() {
       </label>
       <div className="contact-form__footer">
         <button className="button button--primary" type="submit">
-          Send Enquiry
+          {formStatus === 'sending' ? 'Sending...' : 'Send Enquiry'}
         </button>
         <p className="form-note">
-          {isReady
-            ? 'Your mail app should open with the enquiry prefilled.'
-            : 'Submitting opens your email app with the enquiry prefilled to the consulting team.'}
+          {formStatus === 'sent'
+            ? 'Your enquiry has been received.'
+            : formStatus === 'mailto'
+              ? 'Your mail app should open with the enquiry prefilled.'
+              : 'Submitting sends the enquiry to the consulting team.'}
         </p>
       </div>
     </form>
