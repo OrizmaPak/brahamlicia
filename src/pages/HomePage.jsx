@@ -1,124 +1,43 @@
 import React, { useEffect, useState } from 'react'
 import { SectionHeading } from '../components/SectionHeading.jsx'
 import { SiteLayout } from '../components/SiteLayout.jsx'
-import { useSiteContent } from '../context/useSiteContent.js'
+import {
+  audiences,
+  faqItems,
+  heroMoments,
+  homeHighlights,
+  imageLibrary,
+  insights,
+  processSteps,
+  serviceOfferings,
+} from '../content/siteContent.js'
 
 const homeWhyCards = [
   {
     eyebrow: 'Approach',
-    description: 'Recommendations shaped around your real context, priorities, and constraints.',
-    title: 'Context before templates',
+    description: 'Advice shaped around people, context, and real operating conditions.',
+    title: 'Human-centred thinking',
   },
   {
     eyebrow: 'Execution',
-    description: 'Clear next steps that people can act on, not vague ideas that sit on a shelf.',
-    title: 'Advice you can use',
+    description: 'Clear recommendations built to move from decision to action quickly.',
+    title: 'Practical delivery',
   },
   {
-    eyebrow: 'Capability',
-    description: 'Support that strengthens both the people doing the work and the systems around it.',
-    title: 'People and systems together',
+    eyebrow: 'Control',
+    description: 'Structured engagement with enough flexibility for real-world complexity.',
+    title: 'Disciplined flexibility',
   },
   {
-    eyebrow: 'Style',
-    description: 'A calm working style that keeps the engagement focused and easy to follow.',
-    title: 'Structured partnership',
+    eyebrow: 'Outcome',
+    description: 'Stronger clarity, sharper capability, and better operating confidence.',
+    title: 'Visible progress',
   },
 ]
-
-const homeJourneyCards = [
-  {
-    description: 'Align priorities, sharpen the direction, and decide what matters now.',
-    title: 'Clarify the work',
-  },
-  {
-    description: 'Build capability through training, leadership support, and team development.',
-    title: 'Strengthen the people',
-  },
-  {
-    description: 'Add structure, coordination, and follow-through around important initiatives.',
-    title: 'Support the delivery',
-  },
-]
-
-const homeWorldPillars = [
-  {
-    id: 'growth',
-    label: 'Expansion Logic',
-    title: 'Intentional Growth',
-    description:
-      'Shape ambition into a sequenced growth path with sharper positioning, stronger priorities, and commercial direction that can scale.',
-    points: ['Market clarity', 'Roadmap design'],
-  },
-  {
-    id: 'execution',
-    label: 'Operational Rhythm',
-    title: 'Practical Execution',
-    description:
-      'Turn strategy into visible movement through better workflows, stronger coordination, and delivery habits that hold under pressure.',
-    points: ['Delivery systems', 'Team alignment'],
-  },
-  {
-    id: 'control',
-    label: 'Decision Intelligence',
-    title: 'Data Control',
-    description:
-      'Create cleaner visibility around performance, risk, and next-step decisions so leaders can act with more confidence.',
-    points: ['Insight layers', 'Performance control'],
-  },
-]
-
-const homeSpinWords = [
-  'Strategy',
-  'Capability',
-  'Delivery',
-  'Clarity',
-  'Growth',
-  'Method',
-  'Strategy',
-  'Capability',
-  'Delivery',
-  'Clarity',
-  'Growth',
-  'Method',
-]
-
-const homeSpinWordsInner = [
-  'Focus',
-  'Structure',
-  'Signal',
-  'Motion',
-  'Focus',
-  'Structure',
-  'Signal',
-  'Motion',
-]
-
-function getInitials(name) {
-  return name
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0])
-    .join('')
-    .toUpperCase()
-}
 
 export function HomePage({ pageId }) {
-  const {
-    audiences,
-    faqItems,
-    heroMoments,
-    homeHighlights,
-    imageLibrary,
-    testimonials,
-    processSteps,
-    serviceOfferings,
-  } = useSiteContent()
   const [activeHeroMoment, setActiveHeroMoment] = useState(0)
   const [activeFaqQuestion, setActiveFaqQuestion] = useState(faqItems[0]?.question ?? '')
-  const featuredTestimonial = testimonials[0]
-  const supportingTestimonials = testimonials.slice(1, 4)
 
   useEffect(() => {
     const timerId = window.setTimeout(() => {
@@ -126,7 +45,7 @@ export function HomePage({ pageId }) {
     }, 5000)
 
     return () => window.clearTimeout(timerId)
-  }, [activeHeroMoment, heroMoments.length])
+  }, [activeHeroMoment])
 
   const activeMoment = heroMoments[activeHeroMoment]
 
@@ -135,21 +54,20 @@ export function HomePage({ pageId }) {
       <section className="hero section">
         <div className="container hero-grid">
           <div className="hero-copy" data-reveal>
-            <p className="section-eyebrow">Consulting, training, and advisory support</p>
+            <p className="section-eyebrow">Independent consulting brand</p>
             <h1 className="hero-title">
-              Consulting for teams that need clarity.
-              <span> Strategy. Capability. Delivery.</span>
+              Clarity and structure for
+              <span> teams in motion.</span>
             </h1>
             <p className="hero-text">
-              We help businesses, institutions, and leaders strengthen structure, build capable
-              people, and move important work forward.
+              Strategic clarity and cleaner execution for businesses, institutions, and leaders.
             </p>
             <div className="button-row">
               <a className="button button--primary" href="/contact/#enquiry">
                 Book a Consultation
               </a>
               <a className="button button--secondary" href="/services/">
-                See Service Lines
+                Explore Our Services
               </a>
             </div>
             <div className="highlight-list">
@@ -160,7 +78,7 @@ export function HomePage({ pageId }) {
               ))}
             </div>
             <div
-              aria-label="Service focus"
+              aria-label="Hero highlights"
               className="hero-ledger"
               style={{
                 '--active-index': activeHeroMoment,
@@ -212,7 +130,7 @@ export function HomePage({ pageId }) {
                   ))}
                 </ul>
                 <div className="hero-stage__panel-feeling">
-                  <span>What clients gain</span>
+                  <span>What clients feel</span>
                   <strong>{activeMoment.feeling}</strong>
                 </div>
               </div>
@@ -221,57 +139,66 @@ export function HomePage({ pageId }) {
         </div>
       </section>
 
-      <section className="section section--prism section--home-pillars">
-        <div className="container">
+      <section className="section section--soft section--aurora">
+        <div className="container split-layout split-layout--story">
           <SectionHeading
-            align="center"
-            eyebrow="Strategic mark"
-            title="Intentional Growth. Practical Execution. Data Control."
-            description="A spinning wordmark that turns the core method into a cleaner, more captivating visual system."
+            eyebrow="A consulting brand built for progress"
+            title="Intentional growth. Practical execution. Better control."
+            description="We help organisations, teams, and professionals strengthen direction, improve performance, and build systems that support sustainable results."
           />
-          <div className="wordmark-stage" data-reveal style={{ '--delay': '120ms' }}>
-            <div className="wordmark-stage__logo" aria-hidden="true">
-              <div className="wordmark-stage__halo wordmark-stage__halo--one" />
-              <div className="wordmark-stage__halo wordmark-stage__halo--two" />
-              <div className="wordmark-stage__ring wordmark-stage__ring--outer">
-                {homeSpinWords.map((word, index) => (
-                  <span key={`${word}-${index}`} style={{ '--word-index': index }}>
-                    {word}
-                  </span>
-                ))}
-              </div>
-              <div className="wordmark-stage__ring wordmark-stage__ring--inner">
-                {homeSpinWordsInner.map((word, index) => (
-                  <span key={`${word}-${index}`} style={{ '--word-index': index }}>
-                    {word}
-                  </span>
-                ))}
-              </div>
-              <div className="wordmark-stage__core">
-                <span className="wordmark-stage__eyebrow">BLC Method</span>
-                <strong className="wordmark-stage__word" data-text="CLARITY">
-                  CLARITY
-                </strong>
-                <span className="wordmark-stage__subword">in motion</span>
+          <div className="story-card story-card--visual" data-reveal style={{ '--delay': '120ms' }}>
+            <div className="story-card__visual-stage">
+              <figure className="story-card__image story-card__image--primary">
+                <img alt={imageLibrary.strategy.alt} loading="lazy" src={imageLibrary.strategy.src} />
+              </figure>
+              <figure className="story-card__image story-card__image--floating">
+                <img alt={imageLibrary.collaboration.alt} loading="lazy" src={imageLibrary.collaboration.src} />
+              </figure>
+              <div className="story-card__signal">
+                <span>Operating mode</span>
+                <strong>Quiet authority.</strong>
               </div>
             </div>
-
-            <div className="wordmark-stage__notes">
-              {homeWorldPillars.map((pillar, index) => (
-                <article className="wordmark-note" key={pillar.id}>
-                  <span className="wordmark-note__index">{String(index + 1).padStart(2, '0')}</span>
-                  <div className="wordmark-note__body">
-                    <span className="wordmark-note__label">{pillar.label}</span>
-                    <h3>{pillar.title}</h3>
-                    <p>{pillar.description}</p>
-                    <div className="wordmark-note__list">
-                      {pillar.points.map((point) => (
-                        <span key={point}>{point}</span>
-                      ))}
-                    </div>
+            <div className="story-card__content">
+              <p>
+                Our approach combines strategic thinking with practical implementation. That
+                means we do not stop at ideas. We help shape them into action, structure, and
+                measurable progress.
+              </p>
+              <div className="story-track">
+                <article className="story-track__item">
+                  <span className="story-track__index">01</span>
+                  <div className="story-track__body">
+                    <strong>Clarity first</strong>
+                    <p>Define the path before pushing for speed.</p>
                   </div>
                 </article>
-              ))}
+                <article className="story-track__item">
+                  <span className="story-track__index">02</span>
+                  <div className="story-track__body">
+                    <strong>Build clean systems</strong>
+                    <p>Reduce friction with better working structure.</p>
+                  </div>
+                </article>
+                <article className="story-track__item">
+                  <span className="story-track__index">03</span>
+                  <div className="story-track__body">
+                    <strong>Hold the gain</strong>
+                    <p>Turn improvement into a lasting operating rhythm.</p>
+                  </div>
+                </article>
+              </div>
+              <div className="story-card__footer">
+                <div className="illustration-card illustration-card--compact">
+                  <div className="illustration-card__header">
+                    <span>Operating stance</span>
+                    <strong>Quiet confidence. Sharp structure. Clear decisions.</strong>
+                  </div>
+                </div>
+                <a className="text-link" href="/about/">
+                  Learn more about the consulting approach
+                </a>
+              </div>
             </div>
           </div>
         </div>
@@ -280,10 +207,9 @@ export function HomePage({ pageId }) {
       <section className="section section--ribbon section--home-services">
         <div className="container">
           <SectionHeading
-            eyebrow="What we help with"
-            title="Three clear service lines."
-            description="Start with the support you need most: sharper strategy, stronger people, or better project delivery."
-            align="center"
+            eyebrow="What we do"
+            title="Focused support across consulting, learning, and advisory."
+            description="Three service lines designed for clear decisions, stronger execution, and durable results."
           />
           <div className="card-grid card-grid--services">
             {serviceOfferings.map((service, index) => (
@@ -307,7 +233,7 @@ export function HomePage({ pageId }) {
                         <li key={point}>{point}</li>
                       ))}
                     </ul>
-                    <span className="text-link">See service details</span>
+                    <span className="text-link">Explore service</span>
                   </div>
                 </a>
               </article>
@@ -316,66 +242,12 @@ export function HomePage({ pageId }) {
         </div>
       </section>
 
-      <section className="section section--soft section--aurora">
-        <div className="container split-layout split-layout--story">
-          <SectionHeading
-            align="center"
-            eyebrow="Where clients usually start"
-            title="Most engagements begin with one urgent need."
-            description="We help clients identify the clearest starting point, then build the right level of support around it."
-          />
-          <div className="story-card story-card--visual" data-reveal style={{ '--delay': '120ms' }}>
-            <div className="story-card__visual-stage">
-              <figure className="story-card__image story-card__image--primary">
-                <img alt={imageLibrary.strategy.alt} loading="lazy" src={imageLibrary.strategy.src} />
-              </figure>
-              <figure className="story-card__image story-card__image--floating">
-                <img alt={imageLibrary.collaboration.alt} loading="lazy" src={imageLibrary.collaboration.src} />
-              </figure>
-              <div className="story-card__signal">
-                <span>Starting point</span>
-                <strong>Clear next steps.</strong>
-              </div>
-            </div>
-            <div className="story-card__content">
-              <p>
-                Clients typically come to us when strategy feels scattered, teams need support,
-                or delivery needs more structure.
-              </p>
-              <div className="story-track">
-                {homeJourneyCards.map((item, index) => (
-                  <article className="story-track__item" key={item.title}>
-                    <span className="story-track__index">{String(index + 1).padStart(2, '0')}</span>
-                    <div className="story-track__body">
-                      <strong>{item.title}</strong>
-                      <p>{item.description}</p>
-                    </div>
-                  </article>
-                ))}
-              </div>
-              <div className="story-card__footer">
-                <div className="illustration-card illustration-card--compact">
-                  <div className="illustration-card__header">
-                    <span>Practical fit</span>
-                    <strong>Start with the clearest problem. Expand the support only if needed.</strong>
-                  </div>
-                </div>
-                <a className="text-link" href="/services/">
-                  See all service details
-                </a>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
       <section className="section section--soft section--halo section--home-why">
         <div className="container">
           <SectionHeading
-            align="center"
-            eyebrow="Why clients choose us"
-            title="Calm consulting with clear structure."
-            description="We keep the work practical, focused, and easy to move on."
+            eyebrow="Why Braham Licia Consulting"
+            title="A calm, strategic partner with financial-grade discipline."
+            description="We combine clarity, professionalism, and practical thinking to help clients move from challenge to progress."
           />
           <div className="why-grid">
             <div className="card-grid card-grid--two why-grid__cards">
@@ -403,7 +275,7 @@ export function HomePage({ pageId }) {
               <div className="illustration-card illustration-card--compact why-stage__note">
                 <div className="illustration-card__header">
                   <span>Client experience</span>
-                  <strong>Clear thinking without unnecessary noise.</strong>
+                  <strong>Measured thinking with visible operational control.</strong>
                 </div>
               </div>
             </div>
@@ -414,8 +286,8 @@ export function HomePage({ pageId }) {
       <section className="section section--mesh section--home-process">
         <div className="container">
           <SectionHeading
-            eyebrow="How work starts"
-            title="A simple path from first conversation to delivery."
+            eyebrow="How we work"
+            title="A simple, structured pathway from discovery to stronger delivery."
           />
           <div className="timeline-grid">
             {processSteps.map((step, index) => (
@@ -437,29 +309,50 @@ export function HomePage({ pageId }) {
         </div>
       </section>
 
-      <section className="section section--soft section--spotlight section--home-audiences">
-        <div className="container">
-          <SectionHeading
-            eyebrow="Who we work with"
-            title="A strong fit for businesses, institutions, teams, and professionals."
-            description="If you need clearer strategy, stronger capability, or more organised delivery, there is likely a good fit."
-          />
-          <div className="card-grid card-grid--two">
-            {audiences.map((audience, index) => (
-              <article
-                className="audience-card"
-                data-reveal
-                key={audience.title}
-                style={{ '--delay': `${index * 90}ms` }}
-              >
-                <h3>{audience.title}</h3>
-                <p>{audience.description}</p>
-              </article>
-            ))}
-          </div>
-          <div className="button-row section-actions" data-reveal style={{ '--delay': '160ms' }}>
+      <section className="section section--soft section--spotlight section--home-preview">
+        <div className="container preview-grid">
+          <div className="preview-card" data-reveal>
+            <figure className="preview-card__media">
+              <img alt={imageLibrary.collaboration.alt} loading="lazy" src={imageLibrary.collaboration.src} />
+            </figure>
+            <SectionHeading
+              eyebrow="Who we serve"
+              title="Designed for organisations, teams, and professionals committed to intentional growth."
+              description="The About page carries the full audience fit, thought leadership, and brand story so visitors can understand relevance quickly."
+            />
+            <div className="stacked-points">
+              {audiences.slice(0, 3).map((audience) => (
+                <div key={audience.title}>
+                  <strong>{audience.title}</strong>
+                  <p>{audience.description}</p>
+                </div>
+              ))}
+            </div>
             <a className="button button--secondary" href="/about/#who-we-serve">
-              See who we support
+              See who we serve
+            </a>
+          </div>
+
+          <div className="preview-card preview-card--insights" data-reveal style={{ '--delay': '140ms' }}>
+            <figure className="preview-card__media">
+              <img alt={imageLibrary.insightDesk.alt} loading="lazy" src={imageLibrary.insightDesk.src} />
+            </figure>
+            <SectionHeading
+              eyebrow="Insights"
+              title="Ideas for growth and better decision-making."
+              description="We surface reflections on leadership, systems, professional development, and organisational effectiveness inside the About experience."
+            />
+            <div className="insight-stack">
+              {insights.map((entry) => (
+                <article className="insight-snippet" key={entry.title}>
+                  <span>{entry.category}</span>
+                  <h3>{entry.title}</h3>
+                  <p>{entry.excerpt}</p>
+                </article>
+              ))}
+            </div>
+            <a className="button button--secondary" href="/about/#insights">
+              Visit insights
             </a>
           </div>
         </div>
@@ -470,13 +363,13 @@ export function HomePage({ pageId }) {
           <div data-reveal>
             <SectionHeading
               eyebrow="Frequently asked questions"
-              title="Quick answers before you get in touch."
-              description="Start here if you want clarity on fit, format, and the right service path."
+              title="Quick clarity before we start working together."
+              description="Clear answers on fit, delivery format, service customisation, and how to choose the right engagement path."
             />
             <div className="story-card story-card--media">
               <p>
-                You do not need a full brief before reaching out. A short conversation is enough
-                to identify the best next step.
+                You do not need to fully map the whole engagement before reaching out. A short
+                conversation helps define the most practical next step.
               </p>
               <figure className="story-card__image">
                 <img alt={imageLibrary.leadership.alt} loading="lazy" src={imageLibrary.leadership.src} />
@@ -506,83 +399,13 @@ export function HomePage({ pageId }) {
         </div>
       </section>
 
-      <section className="section section--spotlight section--home-testimonials">
-        <div className="container">
-          <SectionHeading
-            align="center"
-            eyebrow="Testimonials"
-            title="Calm structure. Practical delivery. Real client impact."
-            description="A stronger look at the kind of clarity, confidence, and follow-through clients describe after the work lands."
-          />
-          <div className="testimonials-stage">
-            {featuredTestimonial ? (
-              <article className="testimonial-feature" data-reveal style={{ '--delay': '120ms' }}>
-                <div className="testimonial-feature__visual" aria-hidden="true">
-                  <div className="testimonial-feature__halo" />
-                  <div className="testimonial-feature__orbit testimonial-feature__orbit--one" />
-                  <div className="testimonial-feature__orbit testimonial-feature__orbit--two" />
-                  <div className="testimonial-feature__monogram">
-                    {getInitials(featuredTestimonial.author)}
-                  </div>
-                  <span className="testimonial-feature__caption">Client voice</span>
-                </div>
-
-                <div className="testimonial-feature__content">
-                  <span className="testimonial-feature__eyebrow">Featured perspective</span>
-                  {featuredTestimonial.quote ? (
-                    <blockquote className="testimonial-feature__quote">
-                      {featuredTestimonial.quote}
-                    </blockquote>
-                  ) : null}
-                  <div className="testimonial-feature__meta">
-                    <strong>{featuredTestimonial.author}</strong>
-                    <span>{featuredTestimonial.role}</span>
-                    <p>{featuredTestimonial.organisation}</p>
-                  </div>
-                  <div className="testimonial-feature__trust">
-                    <span>Senior leadership trust</span>
-                    <span>Operational clarity</span>
-                    <span>Practical follow-through</span>
-                  </div>
-                </div>
-              </article>
-            ) : null}
-
-            <div className="testimonial-cluster" data-reveal style={{ '--delay': '200ms' }}>
-              {supportingTestimonials.map((testimonial, index) => (
-                <article
-                  className={`testimonial-panel testimonial-panel--${index + 1}`}
-                  key={`${testimonial.author}-${testimonial.organisation}`}
-                >
-                  <div className="testimonial-panel__head">
-                    <div className="testimonial-panel__avatar">{getInitials(testimonial.author)}</div>
-                    <div className="testimonial-panel__person">
-                      <strong>{testimonial.author}</strong>
-                      <span>{testimonial.role}</span>
-                    </div>
-                  </div>
-
-                  {testimonial.quote ? (
-                    <blockquote className="testimonial-panel__quote">{testimonial.quote}</blockquote>
-                  ) : null}
-
-                  <p className="testimonial-panel__org">{testimonial.organisation}</p>
-                </article>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
       <section className="section section--ribbon-soft section--home-cta">
         <div className="container cta-panel" data-reveal>
           <div className="cta-panel__content">
-            <p className="section-eyebrow">Need help with strategy, training, or delivery?</p>
-            <h2 className="section-title">
-              Book a consultation and we will point you to the right support path.
-            </h2>
+            <p className="section-eyebrow">Ready to build with more clarity and confidence?</p>
+            <h2 className="section-title">Consulting, training, and guidance for forward movement.</h2>
             <p className="section-description">
-              Start with the clearest need. We can scope the rest together.
+              Structured support to help your team move with clarity and purpose.
             </p>
           </div>
           <div className="button-row">
@@ -598,4 +421,3 @@ export function HomePage({ pageId }) {
     </SiteLayout>
   )
 }
-

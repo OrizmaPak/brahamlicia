@@ -6,15 +6,11 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build && npm run prerender",
-    "functions:deploy": "npm --prefix functions run deploy",
-    "functions:serve": "npm --prefix functions run serve",
     "lint": "eslint .",
     "prerender": "tsx scripts/prerender.jsx",
-    "preview": "vite preview",
-    "seed:firebase": "tsx scripts/seedFirebaseContent.js"
+    "preview": "vite preview"
   },
   "dependencies": {
-    "firebase": "^12.13.0",
     "react": "^19.2.4",
     "react-dom": "^19.2.4"
   },
@@ -26,7 +22,6 @@
     "eslint": "^9.39.4",
     "eslint-plugin-react-hooks": "^7.0.1",
     "eslint-plugin-react-refresh": "^0.5.2",
-    "firebase-admin": "^13.10.0",
     "globals": "^17.4.0",
     "tsx": "^4.20.6",
     "vite": "^8.0.1"

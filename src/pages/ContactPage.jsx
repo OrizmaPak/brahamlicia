@@ -2,11 +2,9 @@ import React from 'react'
 import { ContactForm } from '../components/ContactForm.jsx'
 import { SectionHeading } from '../components/SectionHeading.jsx'
 import { SiteLayout } from '../components/SiteLayout.jsx'
-import { useSiteContent } from '../context/useSiteContent.js'
+import { imageLibrary, siteConfig } from '../content/siteContent.js'
 
 export function ContactPage({ pageId }) {
-  const { imageLibrary, siteConfig } = useSiteContent()
-
   return (
     <SiteLayout pageId={pageId}>
       <section className="page-hero page-hero--contact section section--soft">
@@ -64,7 +62,7 @@ export function ContactPage({ pageId }) {
                 </div>
                 <div>
                   <span>Phone</span>
-                  <a href="tel:08039613331">{siteConfig.primaryPhone}</a>
+                  <a href="tel:+2348143701179">{siteConfig.primaryPhone}</a>
                 </div>
                 <div>
                   <span>Alternate line</span>

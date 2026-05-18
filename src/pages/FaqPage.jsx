@@ -1,11 +1,9 @@
 import React from 'react'
 import { SectionHeading } from '../components/SectionHeading.jsx'
 import { SiteLayout } from '../components/SiteLayout.jsx'
-import { useSiteContent } from '../context/useSiteContent.js'
+import { faqItems, imageLibrary } from '../content/siteContent.js'
 
 export function FaqPage({ pageId }) {
-  const { faqItems, imageLibrary } = useSiteContent()
-
   return (
     <SiteLayout pageId={pageId}>
       <section className="page-hero section section--soft">

@@ -13,7 +13,6 @@ export default defineConfig({
       input: {
         home: resolve(__dirname, 'index.html'),
         about: resolve(__dirname, 'about/index.html'),
-        admin: resolve(__dirname, 'admin/index.html'),
         services: resolve(__dirname, 'services/index.html'),
         contact: resolve(__dirname, 'contact/index.html'),
         faq: resolve(__dirname, 'faq/index.html'),

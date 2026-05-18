@@ -1,8 +1,13 @@
 import React from 'react'
 import { useEffect, useState } from 'react'
-import { useSiteContent } from '../context/useSiteContent.js'
-
-const brandLogo = '/braham-logo-new.png'
+import brandLogo from '../assets/braham logo new.png'
+import {
+  aboutMenuItems,
+  footerLinks,
+  primaryNavigation,
+  servicesMenuItems,
+  siteConfig,
+} from '../content/siteContent.js'
 
 function BrandMark() {
   return (
@@ -56,13 +61,6 @@ function MobileGroup({ id, isOpen, items, label, onToggle }) {
 export function SiteLayout({ children, pageId }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [activeMobileGroup, setActiveMobileGroup] = useState(null)
-  const {
-    aboutMenuItems,
-    footerLinks,
-    primaryNavigation,
-    servicesMenuItems,
-    siteConfig,
-  } = useSiteContent()
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -237,7 +235,7 @@ export function SiteLayout({ children, pageId }) {
             <div className="footer-links footer-links--contact">
               <a href={`mailto:${siteConfig.primaryEmail}`}>{siteConfig.primaryEmail}</a>
               <a href={`mailto:${siteConfig.secondaryEmail}`}>{siteConfig.secondaryEmail}</a>
-              <a href="tel:08039613331">{siteConfig.primaryPhone}</a>
+              <a href="tel:+2348143701179">{siteConfig.primaryPhone}</a>
               <a href="tel:+2348143866334">{siteConfig.secondaryPhone}</a>
               <span>{siteConfig.location}</span>
               <span>{siteConfig.hours}</span>
@@ -247,7 +245,7 @@ export function SiteLayout({ children, pageId }) {
 
         <div className="container site-footer__bottom">
           <span>Copyright Braham Licia Consulting. All rights reserved.</span>
-          <span>Clear strategy. Stronger people. Better delivery.</span>
+          <span>Built for clarity, growth, and practical direction.</span>
         </div>
       </footer>
     </div>

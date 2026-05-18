@@ -1,3 +1,4 @@
+<<<<<<< ours
 # Logs
 logs
 *.log
@@ -7,34 +8,24 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-# Dependencies and build output
-node_modules/
-dist/
-dist-ssr/
-functions/node_modules/
-functions/lib/
-
-# Local environment and secrets
-.env
-.env.*
-!.env.example
-.secret.local
-*.service-account.json
-service-account*.json
-
-# Hosting/deployment caches
-.vercel/
-.firebase/
-firebase-debug.log
-firebase-debug.*.log
+node_modules
+dist
+dist-ssr
+*.local
 
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
-.idea/
+.idea
 .DS_Store
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
+=======
+node_modules/
+dist/
+.DS_Store
+>>>>>>> theirs
+.vercel
