@@ -7,6 +7,7 @@ import {
 } from 'firebase/auth'
 import { AboutPage } from './AboutPage.jsx'
 import { HomePage } from './HomePage.jsx'
+import { createAboutFallbackFields } from '../content/aboutContentFields.js'
 import { createHomeFallbackFields } from '../content/homeContentFields.js'
 import { InlineEditorProvider } from '../context/InlineEditorContext.jsx'
 import { allowedAdminEmails, isAllowedAdminEmail } from '../lib/adminAccess.js'
@@ -117,21 +118,26 @@ function EnquiriesInbox() {
 function Dashboard({ onLogout, user }) {
   const [seedStatus, setSeedStatus] = useState('')
   const [isSeeding, setIsSeeding] = useState(false)
-  const [isSeedModalOpen, setIsSeedModalOpen] = useState(false)
-  const fallbackFields = useMemo(() => createHomeFallbackFields(), [])
+  const [resetTargetPage, setResetTargetPage] = useState(null)
+  const homeFallbackFields = useMemo(() => createHomeFallbackFields(), [])
+  const aboutFallbackFields = useMemo(() => createAboutFallbackFields(), [])
 
-  async function handleSeedHome() {
+  async function handleResetPage() {
+    if (!resetTargetPage) return
+
     setIsSeeding(true)
-    setSeedStatus('Resetting all Home page content to the original values...')
+    const pageLabel = resetTargetPage === 'about' ? 'About' : 'Home'
+    setSeedStatus(`Resetting all ${pageLabel} page content to the original values...`)
 
     try {
-      await seedPageContent('home', fallbackFields, user)
-      setSeedStatus('Home fallback content has been written to Firestore.')
+      const fields = resetTargetPage === 'about' ? aboutFallbackFields : homeFallbackFields
+      await seedPageContent(resetTargetPage, fields, user)
+      setSeedStatus(`${pageLabel} fallback content has been written to Firestore.`)
     } catch (error) {
       setSeedStatus(error.message)
     } finally {
       setIsSeeding(false)
-      setIsSeedModalOpen(false)
+      setResetTargetPage(null)
     }
   }
 
@@ -162,7 +168,7 @@ function Dashboard({ onLogout, user }) {
             <a className="button button--primary" href="/admin/?edit=home">
               Edit Home Page
             </a>
-            <button className="button button--secondary" onClick={() => setIsSeedModalOpen(true)} type="button">
+            <button className="button button--secondary" onClick={() => setResetTargetPage('home')} type="button">
               Reset Home Page
             </button>
           </div>
@@ -181,19 +187,26 @@ function Dashboard({ onLogout, user }) {
             <a className="button button--primary" href="/admin/?edit=about">
               Edit About Page
             </a>
+            <button className="button button--secondary" onClick={() => setResetTargetPage('about')} type="button">
+              Reset About Page
+            </button>
           </div>
         </details>
       </div>
 
       {seedStatus ? <div className="admin-status">{seedStatus}</div> : null}
-      {isSeedModalOpen ? (
+      {resetTargetPage ? (
         <div aria-modal="true" className="editor-modal" role="dialog">
           <div className="editor-modal__panel admin-seed-modal">
-            <span className="editor-modal__eyebrow">Reset Home Content</span>
-            <h2>Reset all Home page data to the original content?</h2>
+            <span className="editor-modal__eyebrow">
+              {resetTargetPage === 'about' ? 'Reset About Content' : 'Reset Home Content'}
+            </span>
+            <h2>
+              Reset all {resetTargetPage === 'about' ? 'About' : 'Home'} page data to the original content?
+            </h2>
             <p>
-              This will overwrite the current Home page values in `sitePages/home` with the baseline
-              hardcoded content.
+              This will overwrite the current {resetTargetPage === 'about' ? 'About' : 'Home'} page
+              values in `sitePages/{resetTargetPage}` with the baseline hardcoded content.
             </p>
             {isSeeding ? (
               <div className="admin-seed-modal__loading">
@@ -205,12 +218,12 @@ function Dashboard({ onLogout, user }) {
               <button
                 className="button button--secondary"
                 disabled={isSeeding}
-                onClick={() => setIsSeedModalOpen(false)}
+                onClick={() => setResetTargetPage(null)}
                 type="button"
               >
                 Cancel
               </button>
-              <button className="button button--primary" disabled={isSeeding} onClick={handleSeedHome} type="button">
+              <button className="button button--primary" disabled={isSeeding} onClick={handleResetPage} type="button">
                 {isSeeding ? 'Resetting...' : 'Proceed and Reset'}
               </button>
             </div>
