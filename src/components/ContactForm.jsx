@@ -1,6 +1,7 @@
 import React from 'react'
 import { useState } from 'react'
-import { siteConfig } from '../content/siteContent.js'
+import { useSiteContent } from '../context/useSiteContent.js'
+import { submitEnquiry } from '../lib/contentRepository.js'
 
 const initialState = {
   description: '',
@@ -14,7 +15,8 @@ const initialState = {
 
 export function ContactForm() {
   const [formData, setFormData] = useState(initialState)
-  const [isReady, setIsReady] = useState(false)
+  const [status, setStatus] = useState('idle')
+  const { siteConfig } = useSiteContent()
 
   function handleChange(event) {
     const { name, value } = event.target
@@ -24,9 +26,7 @@ export function ContactForm() {
     }))
   }
 
-  function handleSubmit(event) {
-    event.preventDefault()
-
+  function openMailFallback() {
     const subject = `${siteConfig.name} enquiry from ${formData.name || 'Website visitor'}`
     const body = [
       `Full Name: ${formData.name}`,
@@ -41,7 +41,27 @@ export function ContactForm() {
     ].join('\n')
 
     window.location.href = `mailto:${siteConfig.primaryEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
-    setIsReady(true)
+  }
+
+  async function handleSubmit(event) {
+    event.preventDefault()
+    setStatus('submitting')
+
+    try {
+      const result = await submitEnquiry(formData)
+      if (result.fallback) {
+        openMailFallback()
+        setStatus('fallback')
+        return
+      }
+
+      setFormData(initialState)
+      setStatus('sent')
+    } catch (error) {
+      console.error('Unable to submit enquiry.', error)
+      openMailFallback()
+      setStatus('fallback')
+    }
   }
 
   return (
@@ -91,13 +111,15 @@ export function ContactForm() {
         </select>
       </label>
       <div className="contact-form__footer">
-        <button className="button button--primary" type="submit">
-          Send Enquiry
+        <button className="button button--primary" disabled={status === 'submitting'} type="submit">
+          {status === 'submitting' ? 'Sending...' : 'Send Enquiry'}
         </button>
         <p className="form-note">
-          {isReady
-            ? 'Your mail app should open with the enquiry prefilled.'
-            : 'Submitting opens your email app with the enquiry prefilled to the consulting team.'}
+          {status === 'sent'
+            ? 'Thank you. Your enquiry has been received.'
+            : status === 'fallback'
+              ? 'Your mail app should open with the enquiry prefilled.'
+              : 'Submitting sends your enquiry to the consulting team.'}
         </p>
       </div>
     </form>

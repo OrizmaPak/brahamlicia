@@ -6,7 +6,7 @@ export const siteConfig = {
   tagline: 'Helping people, teams, and organisations grow with clarity, capacity, and practical direction.',
   primaryEmail: 'info@brahamlicia.com',
   secondaryEmail: 'customerservice@brahamlicia.com',
-  primaryPhone: '+234 814 370 1179',
+  primaryPhone: '08039613331',
   secondaryPhone: '+234 814 386 6334',
 }
 

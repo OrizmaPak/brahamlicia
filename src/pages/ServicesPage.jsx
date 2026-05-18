@@ -2,9 +2,11 @@ import React from 'react'
 import { SectionHeading } from '../components/SectionHeading.jsx'
 import { ServiceAccordion } from '../components/ServiceAccordion.jsx'
 import { SiteLayout } from '../components/SiteLayout.jsx'
-import { imageLibrary, processSteps, serviceOfferings } from '../content/siteContent.js'
+import { useSiteContent } from '../context/useSiteContent.js'
 
 export function ServicesPage({ pageId }) {
+  const { imageLibrary, processSteps, serviceOfferings } = useSiteContent()
+
   return (
     <SiteLayout pageId={pageId}>
       <section className="page-hero page-hero--services section section--soft">

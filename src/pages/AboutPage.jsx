@@ -1,9 +1,11 @@
 import React from 'react'
 import { SectionHeading } from '../components/SectionHeading.jsx'
 import { SiteLayout } from '../components/SiteLayout.jsx'
-import { audiences, imageLibrary, insights, values } from '../content/siteContent.js'
+import { useSiteContent } from '../context/useSiteContent.js'
 
 export function AboutPage({ pageId }) {
+  const { audiences, imageLibrary, insights, values } = useSiteContent()
+
   return (
     <SiteLayout pageId={pageId}>
       <section className="page-hero page-hero--about section section--soft">

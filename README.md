@@ -1,16 +1,76 @@
-# React + Vite
+# Braham Licia Consulting Website
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+React + Vite public website with a Firebase-backed CMS dashboard.
 
-Currently, two official plugins are available:
+## Local Setup
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+1. Install dependencies:
 
-## React Compiler
+```bash
+npm install
+npm install --prefix functions
+```
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+2. Create `.env.local` from `.env.example`.
 
-## Expanding the ESLint configuration
+3. Run the site:
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+```bash
+npm run dev
+```
+
+The admin dashboard is available at `/admin/`.
+
+## Firebase CMS
+
+The public site renders from local fallback content first, then subscribes to Firestore published content when Firebase is configured.
+
+Collections:
+
+- `publishedContent/{section}/items/{id}`: public readable content.
+- `cmsDrafts/{section}/items/{id}`: admin draft content.
+- `admins/{uid}`: dashboard access list.
+- `enquiries/{id}`: contact form submissions.
+- `mediaAssets/{id}`: Cloudinary upload metadata.
+
+Enable Google as a sign-in provider in Firebase Auth.
+
+Allowed admin Gmail accounts are currently:
+
+- `orevaorior@gmail.com`
+- `jovisamblue@gmail.com`
+
+These accounts can access the dashboard immediately. You can also add additional users by placing their UID in `admins/{uid}`.
+
+## Cloudinary Uploads
+
+Cloudinary uploads are signed by Firebase Functions. Do not store `CLOUDINARY_API_SECRET` in frontend env files.
+
+Set secrets before deploying functions:
+
+```bash
+firebase functions:secrets:set CLOUDINARY_CLOUD_NAME
+firebase functions:secrets:set CLOUDINARY_API_KEY
+firebase functions:secrets:set CLOUDINARY_API_SECRET
+npm run functions:deploy
+```
+
+The Cloudinary API secret shared during setup should be rotated before production use.
+
+## Seed Content
+
+Seed current fallback content into Firestore with a Firebase service account:
+
+```bash
+$env:FIREBASE_SERVICE_ACCOUNT_PATH="C:\path\to\service-account.json"
+npm run seed:firebase
+```
+
+The dashboard also includes a `Seed defaults` button for authenticated admins.
+
+## Verification
+
+```bash
+npm run lint
+npm run build
+```
