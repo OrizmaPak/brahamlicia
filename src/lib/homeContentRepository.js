@@ -1,6 +1,7 @@
 ﻿import {
   addDoc,
   collection,
+  deleteDoc,
   doc,
   getDoc,
   limit,
@@ -188,6 +189,14 @@ export async function createEnquiryStatus(label, user) {
   })
 }
 
+export async function deleteEnquiryStatus(statusId) {
+  if (!isFirebaseConfigured || !db) {
+    throw new Error('Firebase is not configured for this environment.')
+  }
+
+  await deleteDoc(doc(db, 'enquiryStatuses', statusId))
+}
+
 export async function updateEnquiryStatus(enquiryId, status, user) {
   if (!isFirebaseConfigured || !db) {
     throw new Error('Firebase is not configured for this environment.')
@@ -228,6 +237,23 @@ export async function addEnquiryNote(enquiryId, note, user) {
         text: safeNote,
       },
     ],
+    updatedAt: serverTimestamp(),
+    updatedBy: userMetadata(user),
+  })
+}
+
+export async function deleteEnquiryNote(enquiryId, noteIndex, user) {
+  if (!isFirebaseConfigured || !db) {
+    throw new Error('Firebase is not configured for this environment.')
+  }
+
+  const enquiryDocRef = doc(db, 'enquiries', enquiryId)
+  const enquirySnapshot = await getDoc(enquiryDocRef)
+  const existingNotes = enquirySnapshot.data()?.notes ?? []
+  const nextNotes = existingNotes.filter((_, index) => index !== noteIndex)
+
+  await updateDoc(enquiryDocRef, {
+    notes: nextNotes,
     updatedAt: serverTimestamp(),
     updatedBy: userMetadata(user),
   })

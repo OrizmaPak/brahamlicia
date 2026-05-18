@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import {
   GoogleAuthProvider,
   onAuthStateChanged,
@@ -21,6 +21,8 @@ import { auth, isFirebaseConfigured } from '../lib/firebase.js'
 import {
   addEnquiryNote,
   createEnquiryStatus,
+  deleteEnquiryNote,
+  deleteEnquiryStatus,
   seedPageContent,
   setEnquiryArchived,
   subscribeEnquiries,
@@ -72,10 +74,12 @@ function EnquiriesInbox({ user }) {
   const [enquiries, setEnquiries] = useState([])
   const [statuses, setStatuses] = useState([])
   const [activeEnquiryTab, setActiveEnquiryTab] = useState('active')
+  const [activeStatusFilter, setActiveStatusFilter] = useState('All')
+  const [selectedEnquiryId, setSelectedEnquiryId] = useState('')
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(true)
   const [statusInput, setStatusInput] = useState('')
-  const [noteDrafts, setNoteDrafts] = useState({})
+  const [noteDraft, setNoteDraft] = useState('')
   const [busyEnquiryId, setBusyEnquiryId] = useState('')
   const [busyStatusId, setBusyStatusId] = useState('')
 
@@ -107,20 +111,42 @@ function EnquiriesInbox({ user }) {
     return unsubscribe
   }, [])
 
-  const statusOptions = useMemo(() => {
-    const defaults = ['Not attended', 'Attended']
+    const statusOptions = useMemo(() => {
     const custom = statuses.map((item) => item.label).filter(Boolean)
-    return Array.from(new Set([...defaults, ...custom]))
+    return Array.from(new Set([...defaultEnquiryStatuses, ...custom]))
   }, [statuses])
+
+  const customStatuses = useMemo(
+    () => statuses.filter((item) => item.label && !defaultEnquiryStatuses.includes(item.label)),
+    [statuses],
+  )
 
   const visibleEnquiries = useMemo(() => {
     const isArchiveView = activeEnquiryTab === 'archived'
-    return enquiries.filter((item) => Boolean(item.archived) === isArchiveView)
-  }, [activeEnquiryTab, enquiries])
+    const byArchive = enquiries.filter((item) => Boolean(item.archived) === isArchiveView)
+    if (activeStatusFilter === 'All') return byArchive
+    return byArchive.filter((item) => (item.status || 'Not attended') === activeStatusFilter)
+  }, [activeEnquiryTab, activeStatusFilter, enquiries])
+
+  useEffect(() => {
+    if (!visibleEnquiries.length) {
+      setSelectedEnquiryId('')
+      return
+    }
+
+    const exists = visibleEnquiries.some((item) => item.id === selectedEnquiryId)
+    if (!exists) {
+      setSelectedEnquiryId(visibleEnquiries[0].id)
+    }
+  }, [selectedEnquiryId, visibleEnquiries])
+
+  const selectedEnquiry = useMemo(
+    () => visibleEnquiries.find((item) => item.id === selectedEnquiryId) ?? null,
+    [selectedEnquiryId, visibleEnquiries],
+  )
 
   async function handleCreateStatus() {
     if (!statusInput.trim()) return
-
     setBusyStatusId('create-status')
     setError('')
     try {
@@ -128,6 +154,18 @@ function EnquiriesInbox({ user }) {
       setStatusInput('')
     } catch (createError) {
       setError(createError.message)
+    } finally {
+      setBusyStatusId('')
+    }
+  }
+
+  async function handleDeleteStatus(statusId) {
+    setBusyStatusId(statusId)
+    setError('')
+    try {
+      await deleteEnquiryStatus(statusId)
+    } catch (deleteError) {
+      setError(deleteError.message)
     } finally {
       setBusyStatusId('')
     }
@@ -145,15 +183,26 @@ function EnquiriesInbox({ user }) {
     }
   }
 
-  async function handleAddNote(enquiryId) {
-    const note = noteDrafts[enquiryId] ?? ''
-    if (!note.trim()) return
-
-    setBusyEnquiryId(enquiryId)
+  async function handleAddNote() {
+    if (!selectedEnquiry || !noteDraft.trim()) return
+    setBusyEnquiryId(selectedEnquiry.id)
     setError('')
     try {
-      await addEnquiryNote(enquiryId, note, user)
-      setNoteDrafts((current) => ({ ...current, [enquiryId]: '' }))
+      await addEnquiryNote(selectedEnquiry.id, noteDraft, user)
+      setNoteDraft('')
+    } catch (noteError) {
+      setError(noteError.message)
+    } finally {
+      setBusyEnquiryId('')
+    }
+  }
+
+  async function handleDeleteNote(noteIndex) {
+    if (!selectedEnquiry) return
+    setBusyEnquiryId(selectedEnquiry.id)
+    setError('')
+    try {
+      await deleteEnquiryNote(selectedEnquiry.id, noteIndex, user)
     } catch (noteError) {
       setError(noteError.message)
     } finally {
@@ -178,132 +227,162 @@ function EnquiriesInbox({ user }) {
       <div className="admin-card__head">
         <div>
           <span>Enquiries</span>
-          <h2>View and manage enquiries</h2>
+          <h2>Pipeline</h2>
         </div>
         <strong>{visibleEnquiries.length}</strong>
       </div>
 
       <div className="admin-enquiries-toolbar">
         <div className="admin-tab-switch" role="tablist">
-          <button
-            className={activeEnquiryTab === 'active' ? 'is-active' : ''}
-            onClick={() => setActiveEnquiryTab('active')}
-            role="tab"
-            type="button"
-          >
+          <button className={activeEnquiryTab === 'active' ? 'is-active' : ''} onClick={() => setActiveEnquiryTab('active')} type="button">
             Active
           </button>
-          <button
-            className={activeEnquiryTab === 'archived' ? 'is-active' : ''}
-            onClick={() => setActiveEnquiryTab('archived')}
-            role="tab"
-            type="button"
-          >
+          <button className={activeEnquiryTab === 'archived' ? 'is-active' : ''} onClick={() => setActiveEnquiryTab('archived')} type="button">
             Archive
           </button>
         </div>
+        <label className="admin-enquiry__control admin-filter-control">
+          <span>Filter by status</span>
+          <select onChange={(event) => setActiveStatusFilter(event.target.value)} value={activeStatusFilter}>
+            <option value="All">All</option>
+            {statusOptions.map((status) => (
+              <option key={status} value={status}>
+                {status}
+              </option>
+            ))}
+          </select>
+        </label>
+      </div>
 
+      <div className="admin-status-board">
         <div className="admin-status-manager">
           <span>Manage status</span>
           <div>
-            <input
-              onChange={(event) => setStatusInput(event.target.value)}
-              placeholder="Add status"
-              type="text"
-              value={statusInput}
-            />
-            <button
-              className="button button--secondary"
-              disabled={busyStatusId === 'create-status'}
-              onClick={handleCreateStatus}
-              type="button"
-            >
+            <input onChange={(event) => setStatusInput(event.target.value)} placeholder="Add status" type="text" value={statusInput} />
+            <button className="button button--secondary" disabled={busyStatusId === 'create-status'} onClick={handleCreateStatus} type="button">
               {busyStatusId === 'create-status' ? 'Adding...' : 'Add'}
             </button>
+          </div>
+          <div className="admin-status-list">
+            {defaultEnquiryStatuses.map((status) => (
+              <span className="admin-status-pill admin-status-pill--locked" key={status}>
+                {status}
+              </span>
+            ))}
+            {customStatuses.map((status) => (
+              <button
+                className="admin-status-pill"
+                disabled={busyStatusId === status.id}
+                key={status.id}
+                onClick={() => handleDeleteStatus(status.id)}
+                type="button"
+              >
+                {busyStatusId === status.id ? 'Deleting...' : `${status.label} x`}
+              </button>
+            ))}
           </div>
         </div>
       </div>
 
       {isLoading ? <p>Loading enquiries...</p> : null}
       {error ? <div className="admin-alert">{error}</div> : null}
-      {!isLoading && visibleEnquiries.length === 0 ? (
-        <p>No enquiries in this list yet.</p>
-      ) : null}
-      {visibleEnquiries.length > 0 ? (
-        <div className="admin-enquiry-list">
-          {visibleEnquiries.map((item) => {
-            const createdAt = item.createdAt?.toDate?.().toLocaleString?.() ?? 'No date yet'
-            const notes = Array.isArray(item.notes) ? item.notes : []
-            const isBusy = busyEnquiryId === item.id
+      {!isLoading && visibleEnquiries.length === 0 ? <p>No enquiries in this list yet.</p> : null}
 
-            return (
-              <article className="admin-enquiry" key={item.id}>
+      {visibleEnquiries.length > 0 ? (
+        <div className="admin-enquiry-shell">
+          <aside className="admin-enquiry-list admin-enquiry-list--compact">
+            {visibleEnquiries.map((item) => {
+              const isActive = item.id === selectedEnquiryId
+              return (
+                <button
+                  className={`admin-enquiry-row${isActive ? ' is-active' : ''}`}
+                  key={item.id}
+                  onClick={() => setSelectedEnquiryId(item.id)}
+                  type="button"
+                >
+                  <strong>{item.name || 'Unnamed enquiry'}</strong>
+                  <span>{item.service || 'No service selected'}</span>
+                  <span>{item.status || 'Not attended'}</span>
+                </button>
+              )
+            })}
+          </aside>
+
+          {selectedEnquiry ? (
+            <article className="admin-enquiry-detail">
+              <div className="admin-enquiry-detail__head">
                 <div>
-                  <span>{createdAt}</span>
-                  <h3>{item.name || 'Unnamed enquiry'}</h3>
-                  <p>{item.description}</p>
-                  <div className="admin-enquiry__badges">
-                    <span className="admin-enquiry__status">{item.status || 'Not attended'}</span>
-                    {item.archived ? <span className="admin-enquiry__archive-label">Archived</span> : null}
-                  </div>
-                  {notes.length > 0 ? (
-                    <div className="admin-enquiry__notes">
-                      {notes.map((note, index) => (
-                        <p key={`${item.id}-note-${index}`}>
+                  <h3>{selectedEnquiry.name || 'Unnamed enquiry'}</h3>
+                  <p>{selectedEnquiry.createdAt?.toDate?.().toLocaleString?.() ?? 'No date yet'}</p>
+                </div>
+                <span className="admin-enquiry__status">{selectedEnquiry.status || 'Not attended'}</span>
+              </div>
+
+              <p className="admin-enquiry-detail__description">{selectedEnquiry.description}</p>
+              <div className="admin-enquiry-detail__meta">
+                <a href={`mailto:${selectedEnquiry.email}`}>{selectedEnquiry.email}</a>
+                {selectedEnquiry.phone ? <a href={`tel:${selectedEnquiry.phone}`}>{selectedEnquiry.phone}</a> : null}
+                <span>{selectedEnquiry.nextStep}</span>
+              </div>
+
+              <div className="admin-enquiry-detail__controls">
+                <label className="admin-enquiry__control">
+                  <span>Status</span>
+                  <select
+                    disabled={busyEnquiryId === selectedEnquiry.id}
+                    onChange={(event) => handleStatusChange(selectedEnquiry.id, event.target.value)}
+                    value={selectedEnquiry.status || 'Not attended'}
+                  >
+                    {statusOptions.map((status) => (
+                      <option key={status} value={status}>
+                        {status}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <button
+                  className="button button--secondary"
+                  disabled={busyEnquiryId === selectedEnquiry.id}
+                  onClick={() => handleArchiveToggle(selectedEnquiry.id, !selectedEnquiry.archived)}
+                  type="button"
+                >
+                  {selectedEnquiry.archived ? 'Move to Active' : 'Move to Archive'}
+                </button>
+              </div>
+
+              <div className="admin-enquiry-detail__notes">
+                <h4>Notes</h4>
+                {(selectedEnquiry.notes ?? []).length > 0 ? (
+                  <div className="admin-enquiry__notes">
+                    {(selectedEnquiry.notes ?? []).map((note, index) => (
+                      <div className="admin-note-item" key={`${selectedEnquiry.id}-note-${index}`}>
+                        <p>
                           <strong>{note.author || 'Admin'}:</strong> {note.text}
                         </p>
-                      ))}
-                    </div>
-                  ) : null}
-                </div>
-                <div className="admin-enquiry__meta">
-                  <a href={`mailto:${item.email}`}>{item.email}</a>
-                  {item.phone ? <a href={`tel:${item.phone}`}>{item.phone}</a> : null}
-                  <span>{item.service}</span>
-                  <span>{item.nextStep}</span>
-                  <label className="admin-enquiry__control">
-                    <span>Status</span>
-                    <select
-                      disabled={isBusy}
-                      onChange={(event) => handleStatusChange(item.id, event.target.value)}
-                      value={item.status || 'Not attended'}
-                    >
-                      {statusOptions.map((status) => (
-                        <option key={status} value={status}>
-                          {status}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-                  <label className="admin-enquiry__control">
-                    <span>Add note</span>
-                    <textarea
-                      onChange={(event) => {
-                        const value = event.target.value
-                        setNoteDrafts((current) => ({ ...current, [item.id]: value }))
-                      }}
-                      placeholder="Write note..."
-                      rows={3}
-                      value={noteDrafts[item.id] ?? ''}
-                    />
-                  </label>
-                  <div className="admin-enquiry__actions">
-                    <button className="button button--secondary" disabled={isBusy} onClick={() => handleAddNote(item.id)} type="button">
-                      Add note
-                    </button>
-                    <button
-                      className="button button--secondary"
-                      disabled={isBusy}
-                      onClick={() => handleArchiveToggle(item.id, !item.archived)}
-                      type="button"
-                    >
-                      {item.archived ? 'Unarchive' : 'Archive'}
-                    </button>
+                        <button
+                          className="button button--secondary"
+                          disabled={busyEnquiryId === selectedEnquiry.id}
+                          onClick={() => handleDeleteNote(index)}
+                          type="button"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    ))}
                   </div>
-                </div>
-              </article>
-            )
-          })}
+                ) : (
+                  <p>No notes yet.</p>
+                )}
+                <label className="admin-enquiry__control">
+                  <span>Add note</span>
+                  <textarea onChange={(event) => setNoteDraft(event.target.value)} rows={3} value={noteDraft} />
+                </label>
+                <button className="button button--secondary" disabled={busyEnquiryId === selectedEnquiry.id} onClick={handleAddNote} type="button">
+                  Add note
+                </button>
+              </div>
+            </article>
+          ) : null}
         </div>
       ) : null}
     </section>
@@ -336,6 +415,7 @@ function PageControlPanel({ description, editHref, index, onReset, resetLabel, t
 }
 
 const editablePageIds = ['home', 'about', 'services', 'contact', 'footer']
+const defaultEnquiryStatuses = ['Not attended', 'Attended']
 
 const pageLabels = {
   about: 'About',
@@ -593,3 +673,4 @@ export function AdminPage() {
 
   return <Dashboard onLogout={handleLogout} user={authUser} />
 }
+
