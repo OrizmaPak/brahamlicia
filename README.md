@@ -59,14 +59,23 @@ The Cloudinary API secret shared during setup should be rotated before productio
 
 ## Seed Content
 
-Seed current fallback content into Firestore with a Firebase service account:
+The admin dashboard includes:
+
+- `Backup CMS`: downloads current Firestore content and media references.
+- `Backup and seed`: downloads a backup first, then seeds all default content and image references into drafts and published content.
+
+You can also seed current fallback content into Firestore from a trusted local shell with a Firebase service account:
 
 ```bash
 $env:FIREBASE_SERVICE_ACCOUNT_PATH="C:\path\to\service-account.json"
 npm run seed:firebase
 ```
 
-The dashboard also includes a `Seed defaults` button for authenticated admins.
+Create a local backup of the code fallback content:
+
+```bash
+npm run backup:content
+```
 
 ## Verification
 

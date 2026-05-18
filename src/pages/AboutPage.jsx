@@ -1,10 +1,12 @@
 import React from 'react'
+import { SkeletonGrid } from '../components/ContentSkeleton.jsx'
 import { SectionHeading } from '../components/SectionHeading.jsx'
 import { SiteLayout } from '../components/SiteLayout.jsx'
 import { useSiteContent } from '../context/useSiteContent.js'
 
 export function AboutPage({ pageId }) {
-  const { audiences, imageLibrary, insights, values } = useSiteContent()
+  const { audiences, contentMeta, imageLibrary, insights, values } = useSiteContent()
+  const isContentLoading = contentMeta.isLoading
 
   return (
     <SiteLayout pageId={pageId}>
@@ -147,8 +149,11 @@ export function AboutPage({ pageId }) {
                 Growth becomes meaningful when people, systems, and purpose move in alignment.
               </p>
             </div>
-            <div className="card-grid card-grid--audiences about-audiences__cards">
-              {audiences.map((audience, index) => (
+            {isContentLoading ? (
+              <SkeletonGrid count={4} />
+            ) : (
+              <div className="card-grid card-grid--audiences about-audiences__cards">
+                {audiences.map((audience, index) => (
                 <article
                   className="audience-card"
                   data-reveal
@@ -158,8 +163,9 @@ export function AboutPage({ pageId }) {
                   <h3>{audience.title}</h3>
                   <p>{audience.description}</p>
                 </article>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </section>
@@ -196,7 +202,7 @@ export function AboutPage({ pageId }) {
               </div>
             </div>
             <div className="about-insights__feed" data-reveal style={{ '--delay': '170ms' }}>
-              {insights.map((entry) => (
+              {isContentLoading ? <SkeletonGrid count={3} /> : insights.map((entry) => (
                 <article className="insight-card about-insights__item" key={entry.title}>
                   <span>{entry.category}</span>
                   <h3>{entry.title}</h3>

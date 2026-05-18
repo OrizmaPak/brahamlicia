@@ -12,41 +12,15 @@ import {
   writeBatch,
   onSnapshot,
 } from 'firebase/firestore'
+import {
+  collectImageAssets,
+  editableSections,
+  singletonSections,
+} from '../content/contentModel.js'
 import { db } from './firebase.js'
 import { isAllowlistedAdminEmail } from './adminAccess.js'
 
-export const editableSections = [
-  {
-    collectionName: 'services',
-    contentKey: 'serviceOfferings',
-    label: 'Services',
-    singularLabel: 'Service',
-  },
-  {
-    collectionName: 'testimonials',
-    contentKey: 'testimonials',
-    label: 'Testimonials',
-    singularLabel: 'Testimonial',
-  },
-  {
-    collectionName: 'faqs',
-    contentKey: 'faqItems',
-    label: 'FAQs',
-    singularLabel: 'FAQ',
-  },
-  {
-    collectionName: 'audiences',
-    contentKey: 'audiences',
-    label: 'Audiences',
-    singularLabel: 'Audience',
-  },
-  {
-    collectionName: 'insights',
-    contentKey: 'insights',
-    label: 'Insights',
-    singularLabel: 'Insight',
-  },
-]
+export { editableSections, singletonSections }
 
 const sectionByCollection = new Map(
   editableSections.map((section) => [section.collectionName, section]),
@@ -112,11 +86,25 @@ function settingsRef(scope) {
   return doc(requireDb(), scope, 'settings', 'items', 'general')
 }
 
-export function subscribeToPublishedContent(onChange, onError) {
+function singletonRef(scope, sectionName) {
+  return doc(requireDb(), scope, sectionName, 'items', 'general')
+}
+
+export function subscribeToPublishedContent(onChange, onError, onReady) {
   if (!db) return () => {}
 
   const state = {}
   const emit = () => onChange({ ...state })
+  let pendingSnapshots = editableSections.length + singletonSections.length + 1
+  const readyKeys = new Set()
+
+  const markReady = (key) => {
+    if (readyKeys.has(key)) return
+    readyKeys.add(key)
+    pendingSnapshots -= 1
+    if (pendingSnapshots <= 0) onReady?.()
+  }
+
   const unsubscribers = [
     onSnapshot(
       settingsRef('publishedContent'),
@@ -125,8 +113,12 @@ export function subscribeToPublishedContent(onChange, onError) {
           state.siteConfig = snapshot.data()
           emit()
         }
+        markReady('settings')
       },
-      onError,
+      (error) => {
+        markReady('settings')
+        onError?.(error)
+      },
     ),
   ]
 
@@ -142,8 +134,31 @@ export function subscribeToPublishedContent(onChange, onError) {
         (snapshot) => {
           state[section.contentKey] = snapshotItems(snapshot)
           emit()
+          markReady(section.collectionName)
         },
-        onError,
+        (error) => {
+          markReady(section.collectionName)
+          onError?.(error)
+        },
+      ),
+    )
+  })
+
+  singletonSections.forEach((section) => {
+    unsubscribers.push(
+      onSnapshot(
+        singletonRef('publishedContent', section.collectionName),
+        (snapshot) => {
+          if (snapshot.exists()) {
+            state[section.contentKey] = snapshot.data().value
+            emit()
+          }
+          markReady(section.collectionName)
+        },
+        (error) => {
+          markReady(section.collectionName)
+          onError?.(error)
+        },
       ),
     )
   })
@@ -151,6 +166,18 @@ export function subscribeToPublishedContent(onChange, onError) {
   return () => {
     unsubscribers.forEach((unsubscribe) => unsubscribe())
   }
+}
+
+export function subscribeToSingleton(scope, sectionName, onChange, onError) {
+  if (!db) return () => {}
+
+  return onSnapshot(
+    singletonRef(scope, sectionName),
+    (snapshot) => {
+      onChange(snapshot.exists() ? { id: 'general', value: snapshot.data().value } : null)
+    },
+    onError,
+  )
 }
 
 export function subscribeToSettings(scope, onChange, onError) {
@@ -205,6 +232,30 @@ export async function publishSettings(settings) {
   await Promise.all([
     setDoc(settingsRef('cmsDrafts'), payload, { merge: true }),
     setDoc(settingsRef('publishedContent'), payload, { merge: true }),
+  ])
+}
+
+export async function saveDraftSingleton(sectionName, value) {
+  await setDoc(
+    singletonRef('cmsDrafts', sectionName),
+    {
+      updatedAt: serverTimestamp(),
+      value: cleanFirestoreData(value),
+    },
+    { merge: true },
+  )
+}
+
+export async function publishSingleton(sectionName, value) {
+  const payload = {
+    publishedAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+    value: cleanFirestoreData(value),
+  }
+
+  await Promise.all([
+    setDoc(singletonRef('cmsDrafts', sectionName), payload, { merge: true }),
+    setDoc(singletonRef('publishedContent', sectionName), payload, { merge: true }),
   ])
 }
 
@@ -308,7 +359,65 @@ export async function seedContentToFirestore(content) {
     })
   })
 
+  singletonSections.forEach((section) => {
+    const payload = {
+      publishedAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+      value: cleanFirestoreData(content[section.contentKey]),
+    }
+
+    batch.set(singletonRef('cmsDrafts', section.collectionName), payload, { merge: true })
+    batch.set(singletonRef('publishedContent', section.collectionName), payload, { merge: true })
+  })
+
+  collectImageAssets(content).forEach((asset) => {
+    const id = slugify(asset.sourcePath || asset.src)
+    batch.set(doc(firestore, 'mediaAssets', id), {
+      alt: asset.alt,
+      createdAt: serverTimestamp(),
+      sourcePath: asset.sourcePath,
+      src: asset.src,
+      type: 'seeded-reference',
+      updatedAt: serverTimestamp(),
+    }, { merge: true })
+  })
+
   await batch.commit()
+}
+
+async function getCollectionDocuments(path) {
+  const snapshot = await getDocs(collection(requireDb(), path))
+  return Object.fromEntries(
+    snapshot.docs.map((documentSnapshot) => [documentSnapshot.id, documentSnapshot.data()]),
+  )
+}
+
+export async function exportCurrentCmsContent() {
+  const backup = {
+    createdAt: new Date().toISOString(),
+    mediaAssets: await getCollectionDocuments('mediaAssets'),
+    scopes: {},
+  }
+
+  for (const scope of ['cmsDrafts', 'publishedContent']) {
+    backup.scopes[scope] = {
+      settings: await getCollectionDocuments(`${scope}/settings/items`),
+    }
+
+    for (const section of editableSections) {
+      backup.scopes[scope][section.collectionName] = await getCollectionDocuments(
+        `${scope}/${section.collectionName}/items`,
+      )
+    }
+
+    for (const section of singletonSections) {
+      backup.scopes[scope][section.collectionName] = await getCollectionDocuments(
+        `${scope}/${section.collectionName}/items`,
+      )
+    }
+  }
+
+  return backup
 }
 
 export async function getEnquiries() {

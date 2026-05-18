@@ -38,7 +38,7 @@ export const defaultSiteContent = {
   whyChooseUs,
 }
 
-export function createSiteContent(overrides = {}) {
+export function createSiteContent(overrides = {}, meta = {}) {
   const serviceOfferingsOverride = overrides.serviceOfferings ?? defaultSiteContent.serviceOfferings
   const siteConfigOverride = {
     ...defaultSiteContent.siteConfig,
@@ -57,5 +57,11 @@ export function createSiteContent(overrides = {}) {
       })),
     ],
     siteConfig: siteConfigOverride,
+    contentMeta: {
+      error: null,
+      isLoading: false,
+      source: 'fallback',
+      ...meta,
+    },
   }
 }

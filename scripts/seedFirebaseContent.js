@@ -1,17 +1,14 @@
-import { existsSync, readFileSync } from 'node:fs'
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import process from 'node:process'
 import { applicationDefault, cert, initializeApp } from 'firebase-admin/app'
 import { FieldValue, getFirestore } from 'firebase-admin/firestore'
 import { defaultSiteContent } from '../src/content/defaultContent.js'
-
-const sections = [
-  ['services', 'serviceOfferings'],
-  ['testimonials', 'testimonials'],
-  ['faqs', 'faqItems'],
-  ['audiences', 'audiences'],
-  ['insights', 'insights'],
-]
+import {
+  collectImageAssets,
+  editableSections,
+  singletonSections,
+} from '../src/content/contentModel.js'
 
 function loadEnvFile(filePath) {
   if (!existsSync(filePath)) return {}
@@ -73,10 +70,52 @@ initializeApp({ credential, projectId })
 const db = getFirestore()
 const batch = db.batch()
 const timestamp = FieldValue.serverTimestamp()
+const backupTimestamp = new Date().toISOString().replace(/[:.]/g, '-')
 
 function itemRef(scope, section, id) {
   return db.doc(`${scope}/${section}/items/${id}`)
 }
+
+async function readCollection(path) {
+  const snapshot = await db.collection(path).get()
+  return Object.fromEntries(
+    snapshot.docs.map((documentSnapshot) => [documentSnapshot.id, documentSnapshot.data()]),
+  )
+}
+
+async function backupCurrentFirebaseContent() {
+  const backup = {
+    createdAt: new Date().toISOString(),
+    mediaAssets: await readCollection('mediaAssets'),
+    projectId,
+    scopes: {},
+  }
+
+  for (const scope of ['cmsDrafts', 'publishedContent']) {
+    backup.scopes[scope] = {
+      settings: await readCollection(`${scope}/settings/items`),
+    }
+
+    for (const section of editableSections) {
+      backup.scopes[scope][section.collectionName] = await readCollection(
+        `${scope}/${section.collectionName}/items`,
+      )
+    }
+
+    for (const section of singletonSections) {
+      backup.scopes[scope][section.collectionName] = await readCollection(
+        `${scope}/${section.collectionName}/items`,
+      )
+    }
+  }
+
+  mkdirSync(resolve('backups'), { recursive: true })
+  const backupPath = resolve('backups', `firebase-content-backup-${backupTimestamp}.json`)
+  writeFileSync(backupPath, JSON.stringify(backup, null, 2), 'utf8')
+  console.log(`Backed up current Firebase content to ${backupPath}`)
+}
+
+await backupCurrentFirebaseContent()
 
 const settingsPayload = cleanData(defaultSiteContent.siteConfig)
 batch.set(itemRef('cmsDrafts', 'settings', 'general'), {
@@ -89,8 +128,8 @@ batch.set(itemRef('publishedContent', 'settings', 'general'), {
   updatedAt: timestamp,
 })
 
-sections.forEach(([sectionName, contentKey]) => {
-  const items = defaultSiteContent[contentKey] ?? []
+editableSections.forEach((section) => {
+  const items = defaultSiteContent[section.contentKey] ?? []
 
   items.forEach((item, index) => {
     const id = item.id ?? item.anchor ?? slugify(item.title ?? item.question ?? item.author)
@@ -101,12 +140,12 @@ sections.forEach(([sectionName, contentKey]) => {
     })
     delete payload.id
 
-    batch.set(itemRef('cmsDrafts', sectionName, id), {
+    batch.set(itemRef('cmsDrafts', section.collectionName, id), {
       ...payload,
       publishedAt: timestamp,
       updatedAt: timestamp,
     }, { merge: true })
-    batch.set(itemRef('publishedContent', sectionName, id), {
+    batch.set(itemRef('publishedContent', section.collectionName, id), {
       ...payload,
       publishedAt: timestamp,
       updatedAt: timestamp,
@@ -114,5 +153,27 @@ sections.forEach(([sectionName, contentKey]) => {
   })
 })
 
+singletonSections.forEach((section) => {
+  const payload = {
+    publishedAt: timestamp,
+    updatedAt: timestamp,
+    value: cleanData(defaultSiteContent[section.contentKey]),
+  }
+
+  batch.set(itemRef('cmsDrafts', section.collectionName, 'general'), payload, { merge: true })
+  batch.set(itemRef('publishedContent', section.collectionName, 'general'), payload, { merge: true })
+})
+
+collectImageAssets(defaultSiteContent).forEach((asset) => {
+  batch.set(db.doc(`mediaAssets/${slugify(asset.sourcePath || asset.src)}`), {
+    alt: asset.alt,
+    createdAt: timestamp,
+    sourcePath: asset.sourcePath,
+    src: asset.src,
+    type: 'seeded-reference',
+    updatedAt: timestamp,
+  }, { merge: true })
+})
+
 await batch.commit()
-console.log('Seeded default content into Firestore drafts and published content.')
+console.log('Seeded all default content and image references into Firestore.')

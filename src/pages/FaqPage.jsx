@@ -1,10 +1,12 @@
 import React from 'react'
+import { SkeletonGrid } from '../components/ContentSkeleton.jsx'
 import { SectionHeading } from '../components/SectionHeading.jsx'
 import { SiteLayout } from '../components/SiteLayout.jsx'
 import { useSiteContent } from '../context/useSiteContent.js'
 
 export function FaqPage({ pageId }) {
-  const { faqItems, imageLibrary } = useSiteContent()
+  const { contentMeta, faqItems, imageLibrary } = useSiteContent()
+  const isContentLoading = contentMeta.isLoading
 
   return (
     <SiteLayout pageId={pageId}>
@@ -41,7 +43,7 @@ export function FaqPage({ pageId }) {
               description="The FAQ now reads more like part of the brand experience, with supporting visuals and a stronger sense of professionalism."
             />
             <div className="faq-stack">
-              {faqItems.map((item, index) => (
+              {isContentLoading ? <SkeletonGrid count={5} variant="faq" /> : faqItems.map((item, index) => (
                 <details
                   className="faq-item"
                   data-reveal
